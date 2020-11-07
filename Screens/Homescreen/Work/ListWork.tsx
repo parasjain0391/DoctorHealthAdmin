@@ -8,6 +8,7 @@ import database from '@react-native-firebase/database';
 // @ts-ignore
 import CallLogs from 'react-native-call-log';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {FAB} from 'react-native-paper';
 interface Props extends NavigationParams{}
 interface States {
     calls: {
@@ -125,16 +126,21 @@ export default class ListWork extends React.Component<Props,States> {
               {/* Only Load 100 Logs
               Need to add a button to load all call*/}
             </ScrollView>
+            <FAB
+                style={styles.fab}
+                icon="plus"
+                onPress={() => {console.log('Add button pressed'); this.props.navigation.navigate('AddWork');}}
+            />
           </View>
         );
     }
 }
 const styles = StyleSheet.create({
     fab: {
-      position: 'absolute',
-      margin: 16,
-      right: 0,
-      top: 110,
+        alignSelf:'flex-end',
+        position:'absolute',
+        bottom:10,
+        right:10,
     },
     container: {
         flex: 1,
