@@ -3,7 +3,6 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View, Platform, PermissionsAndroid, Alert } from 'react-native';
 import { NavigationParams } from 'react-navigation';
-import { FAB } from 'react-native-paper';
 import { ListItem, Icon } from 'react-native-elements';
 import database from '@react-native-firebase/database';
 // @ts-ignore
@@ -108,17 +107,12 @@ export default class ListWork extends React.Component<Props,States> {
       renderCalls() {
         return this.state.calls.map(call => {
           return <ListItem key={call.timestamp}
-              onPress={()=> this.props.navigation.navigate('SingleLog',{call:call})}
+          onPress={()=>{this.props.navigation.navigate('AssignWork',{call:call});}}
               bottomDivider>
               <ListItem.Content>
               <ListItem.Title>{(call.name === null) ? call.phoneNumber : call.name}</ListItem.Title>
               <ListItem.Subtitle>{call.phoneNumber}</ListItem.Subtitle>
               </ListItem.Content>
-              <Icon
-                name="ellipsis-v"
-                type="font-awesome"
-                size={22}
-              />
               {this.getCallIcon(call.type)}
             </ListItem>;
         });
@@ -131,13 +125,6 @@ export default class ListWork extends React.Component<Props,States> {
               {/* Only Load 100 Logs
               Need to add a button to load all call*/}
             </ScrollView>
-            <FAB
-                    style={styles.fab}
-                    icon="plus"
-                    onPress={() => {
-                        this.addWork();
-                    }}
-                    />
           </View>
         );
     }

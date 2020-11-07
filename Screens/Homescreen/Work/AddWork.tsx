@@ -10,6 +10,12 @@ interface States {
     phoneNumber:string;
 }
 export default class AddWork extends React.Component<Props,States> {
+    constructor(props:Props){
+        super(props);
+        this.state = {
+            phoneNumber:'',
+        };
+    }
     addPatient() {
         console.log(this.state.phoneNumber + ' is added to the work');
         this.props.navigation.navigate('ListWork');
