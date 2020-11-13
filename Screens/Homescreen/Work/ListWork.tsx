@@ -4,7 +4,7 @@ import React from 'react';
 import { ScrollView, StyleSheet, View, Platform, PermissionsAndroid, Alert } from 'react-native';
 import { NavigationParams } from 'react-navigation';
 import { ListItem, Icon } from 'react-native-elements';
-import database from '@react-native-firebase/database';
+//import database from '@react-native-firebase/database';
 // @ts-ignore
 import CallLogs from 'react-native-call-log';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -75,9 +75,9 @@ export default class ListWork extends React.Component<Props,States> {
       componentDidUpdate() {
         CallLogs.load(100).then((calls: any) => this._isMounted && this.setState({calls}));
         if (this.uid !== 'null') {
-          database()
-          .ref('/users/' + String(this.uid))
-          .set(this.state.calls);
+          // database()
+          // .ref('/users/' + String(this.uid))
+          // .set(this.state.calls);
           //.then(() => console.log('Data set.'));
           // The console print is removed due to extra screen space in node
         }

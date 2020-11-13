@@ -4,7 +4,7 @@ import React from 'react';
 import { ScrollView, View, StyleSheet, Text } from 'react-native';
 import { NavigationParams } from 'react-navigation';
 import { ListItem, Button } from 'react-native-elements';
-
+import database from '@react-native-firebase/database';
 const styles = StyleSheet.create({
     body: {
       backgroundColor: 'white',
@@ -85,7 +85,28 @@ export default class AssignWork extends React.Component<Props,States> {
     assignWork() {
         // Code for work Assignment
         console.log('Work Assigned');
-        this.props.navigation.navigate('ListWork');
+        if(this.selectDoctor.name=='Not Selected'){
+            Alert.alert('Please select a doctor');
+            return
+        }else {
+            const {call} = this.props.route.params;
+            const assign={
+                "phoneNumber": call.phoneNumber,
+                "timestamp": call.timestamp,
+                "rawType": call.rawType,
+                "type": call.type,
+                "duration": call.duration,
+                "name":call.name,
+                "dateTime":call.dateTime,
+                "assignTo": this.selectedDoctor.name,
+            };
+            console.log(assign);
+            database()
+            .ref('/admin/assignedwork/')
+            .set(assign);
+            this.props.navigation.navigate('ListWork');
+        }
+        
     }
     renderDoctor() {
         return this.state.doctors.map(doctor => {
