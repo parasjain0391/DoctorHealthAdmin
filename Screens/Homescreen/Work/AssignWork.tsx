@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { ScrollView, View, StyleSheet, Text } from 'react-native';
+import { ScrollView, View, StyleSheet, Text, Alert } from 'react-native';
 import { NavigationParams } from 'react-navigation';
 import { ListItem, Button } from 'react-native-elements';
 import database from '@react-native-firebase/database';
@@ -85,20 +85,20 @@ export default class AssignWork extends React.Component<Props,States> {
     assignWork() {
         // Code for work Assignment
         console.log('Work Assigned');
-        if(this.selectDoctor.name=='Not Selected'){
+        if (this.selectDoctor.name === 'Not Selected'){
             Alert.alert('Please select a doctor');
-            return
-        }else {
+            return;
+        } else {
             const {call} = this.props.route.params;
-            const assign={
-                "phoneNumber": call.phoneNumber,
-                "timestamp": call.timestamp,
-                "rawType": call.rawType,
-                "type": call.type,
-                "duration": call.duration,
-                "name":call.name,
-                "dateTime":call.dateTime,
-                "assignTo": this.selectedDoctor.name,
+            const assign = {
+                'phoneNumber': call.phoneNumber,
+                'timestamp': call.timestamp,
+                'rawType': call.rawType,
+                'type': call.type,
+                'duration': call.duration,
+                'name':call.name,
+                'dateTime':call.dateTime,
+                'assignTo': this.selectedDoctor.name,
             };
             console.log(assign);
             database()
@@ -106,7 +106,6 @@ export default class AssignWork extends React.Component<Props,States> {
             .set(assign);
             this.props.navigation.navigate('ListWork');
         }
-        
     }
     renderDoctor() {
         return this.state.doctors.map(doctor => {
