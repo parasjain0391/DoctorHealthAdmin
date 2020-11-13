@@ -99,6 +99,7 @@ export default class AssignWork extends React.Component<Props,States> {
                 'name':call.name,
                 'dateTime':call.dateTime,
                 'assignTo': this.selectedDoctor.name,
+                'uid': this.selectedDoctor.uid,
             };
             console.log(assign);
             database()
