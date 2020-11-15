@@ -6,7 +6,7 @@ import { Input, Button } from 'react-native-elements';
 import auth from '@react-native-firebase/auth';
 import { NavigationParams } from 'react-navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import database from '@react-native-firebase/database';
 
 interface Props extends NavigationParams{
 }
@@ -69,13 +69,24 @@ export default class Login extends React.Component<Props,States> {
     loginSuccess(UserCredential: any) {
         console.log(UserCredential);
         this.setState({uid:UserCredential.user.uid});
-        this.props.navigation.reset({
-            index: 0,
-            routes: [{ name: 'Homescreen' }],
-          });
-        this.setEmail(this.state.email.trim());
-        this.setPassword(this.state.password);
-        this.setuid(UserCredential.user.uid);
+        database()
+        .ref('/user/' + this.state.uid)
+        .once('value')
+        .then(snapshot => {
+            const userdata = snapshot.val();
+            console.log('User data: ', userdata);
+            if (userdata.role === 1) {
+                this.props.navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'Homescreen' }],
+                });
+                this.setEmail(this.state.email.trim());
+                this.setPassword(this.state.password);
+                this.setuid(UserCredential.user.uid);
+            } else {
+                Alert.alert('User is not an admin');
+            }
+        }).catch(err => {Alert.alert(err);});
     }
     // Called after login button is pressed
     loginHandler() {
