@@ -1,39 +1,45 @@
 /* eslint-disable prettier/prettier */
 import React from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { FAB } from 'react-native-paper';
 import { NavigationParams } from 'react-navigation';
 import {ListItem } from 'react-native-elements';
 import { ScrollView } from 'react-native-gesture-handler';
+import database from '@react-native-firebase/database';
 interface Props extends NavigationParams{}
 interface States {
-    doctors: {
-        name:string,
-        uid:string,
-    } [],
+    doctors: any [],
 }
 export default class ListDoctor extends React.Component<Props,States> {
     constructor(props:Props) {
         super(props);
         this.state = {
             doctors: [
-                {'uid':'1','name':'Paras1'},
-                {'uid':'2','name':'Paras2'},
-                {'uid':'3','name':'Paras3'},
-                {'uid':'4','name':'Paras4'},
-                {'uid':'5','name':'Paras5'},
-                {'uid':'6','name':'Paras6'},
-                {'uid':'7','name':'Paras7'},
-                {'uid':'8','name':'Paras8'},
-                {'uid':'9','name':'Paras9'},
-                {'uid':'10','name':'Paras10'},
-                {'uid':'11','name':'Paras11'},
             ],
         };
     }
+    componentDidMount() {
+        database()
+        .ref('/user')
+        .once('value')
+        .then((snapshot) => {
+            const doctors:any = [];
+            snapshot.forEach((item:any)=>{
+                var i = item.val();
+                i.uid = item.key;
+                if (i.role === 0){
+                    doctors.push(i);
+                }
+                console.log(i);
+            });
+            this.setState({ doctors: doctors });
+            console.log(this.state.doctors);
+          })
+        .catch(err => {console.log(err);});
+    }
     viewDoctorDetail(doctor:any) {
         //code to view doctor detail
-        console.log(doctor.name + 'Details');
+        console.log(doctor.firstName + ' ' + doctor.lastName + ' Details');
     }
     renderDoctor() {
         return this.state.doctors.map(doctor => {
@@ -41,7 +47,7 @@ export default class ListDoctor extends React.Component<Props,States> {
               onPress={()=> this.viewDoctorDetail(doctor)}
               bottomDivider>
               <ListItem.Content>
-              <ListItem.Title>{doctor.name}</ListItem.Title>
+              <ListItem.Title>{doctor.firstName} {doctor.lastName}</ListItem.Title>
               <ListItem.Subtitle>Doctor</ListItem.Subtitle>
               </ListItem.Content>
             </ListItem>;
