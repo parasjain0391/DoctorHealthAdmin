@@ -5,6 +5,8 @@ import Work from './Homescreen/Work';
 import Doctor from './Homescreen/Doctor';
 import Setting from './Homescreen/Setting';
 import { NavigationParams } from 'react-navigation';
+// Screen that open after the login
+// is a tab navigator that open the work screen by default which by itself is a stack navigator
 const Tab = createMaterialTopTabNavigator();
 interface Props extends NavigationParams{}
 interface States {}

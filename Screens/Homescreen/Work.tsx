@@ -5,6 +5,8 @@ import {createStackNavigator} from '@react-navigation/stack';
 import ListWork from './Work/ListWork';
 import AddWork from './Work/AddWork';
 import AssignWork from './Work/AssignWork';
+// default tab in the Homescreen
+// deal with the patient and thier assignment
 const Stack = createStackNavigator();
 interface Props extends NavigationParams{}
 interface States {}

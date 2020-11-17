@@ -7,6 +7,7 @@ import auth from '@react-native-firebase/auth';
 import { NavigationParams } from 'react-navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import database from '@react-native-firebase/database';
+// the screen that handles the login
 
 interface Props extends NavigationParams{
 }
@@ -40,18 +41,23 @@ export default class Login extends React.Component<Props,States> {
         };
         this.loginCheck();
     }
+
+    // Store the email for presist login
     async setEmail(email:any) {
         await AsyncStorage.setItem('email',email);
         console.log('Set Email ' + email);
     }
+    // Store the password for the persist login
     async setPassword(password:any) {
         await AsyncStorage.setItem('password',password);
         console.log('Set Password ' + password);
     }
+    // Store the uid for further usage in the app by the other screens
     async setuid(uid:any) {
         await AsyncStorage.setItem('uid',uid);
         console.log('Set uid ' + uid);
     }
+    // thsi check whether the user is already logged in
     async loginCheck() {
         const e:any = await AsyncStorage.getItem('email');
         const p:any = await AsyncStorage.getItem('password');
@@ -65,12 +71,12 @@ export default class Login extends React.Component<Props,States> {
             this.loginHandler();
         }
     }
-    // When login is successful
+    // When authorization is successful the following code is run to check the role of the user and navigate to Homescreen
     loginSuccess(UserCredential: any) {
         console.log(UserCredential);
         this.setState({uid:UserCredential.user.uid});
         database()
-        .ref('/user/' + this.state.uid)
+        .ref('/user/' + UserCredential.user.uid)
         .once('value')
         .then(snapshot => {
             const userdata = snapshot.val();
@@ -88,7 +94,7 @@ export default class Login extends React.Component<Props,States> {
             }
         }).catch(err => {Alert.alert(err);});
     }
-    // Called after login button is pressed
+    // Called after login button is pressed and authenticate the user with the firebase and call the loginsuccess to handle after authorization
     loginHandler() {
         try {
             console.log('Login Button pressed');

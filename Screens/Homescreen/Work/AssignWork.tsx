@@ -5,6 +5,7 @@ import { ScrollView, View, StyleSheet, Text, Alert } from 'react-native';
 import { NavigationParams } from 'react-navigation';
 import { ListItem, Button } from 'react-native-elements';
 import database from '@react-native-firebase/database';
+// assign the patient to a doctor through this screen
 const styles = StyleSheet.create({
     body: {
       backgroundColor: 'white',
@@ -60,11 +61,13 @@ export default class AssignWork extends React.Component<Props,States> {
         };
         this.selectedDoctor = {'name':'Not Selected','uid':''};
     }
+    // Select the doctor is assigned to the variable and reflect it on the screen
     selectDoctor(doctor:any) {
         this.selectedDoctor = doctor;
         console.log(this.selectedDoctor.firstName + ' ' + this.selectedDoctor.lastName + ' is selected');
         this.forceUpdate();
     }
+    // loaad the doctor information fromm the database and push it to local variable doctors
     componentDidMount() {
         database()
         .ref('/user')
@@ -84,6 +87,8 @@ export default class AssignWork extends React.Component<Props,States> {
           })
         .catch(err => {console.log(err);});
     }
+    // the patient is assigned to the doctor and the databse is updated
+    // After the assignment the sreen goes back to list work
     assignWork() {
         // Code for work Assignment
         console.log('Work Assigned');
@@ -112,6 +117,7 @@ export default class AssignWork extends React.Component<Props,States> {
             this.props.navigation.navigate('ListWork');
         }
     }
+    // UI element of the doctors
     renderDoctor() {
         return this.state.doctors.map(doctor => {
           return <ListItem key={doctor.uid}
@@ -133,12 +139,14 @@ export default class AssignWork extends React.Component<Props,States> {
                 <Text style={{fontSize:18, marginHorizontal:60}}>Selected Doctor: {this.selectedDoctor.firstName} {this.selectedDoctor.lastName}</Text>
                 <View style={styles.buttonarea}>
                 <Button
+                    // cancel the work assignment and go back
                     onPress={()=>{this.props.navigation.navigate('ListWork');}}
                     title="Cancel"
                     type="solid"
                     buttonStyle={styles.button}
                 />
                 <Button
+                    // assign the work
                     onPress={()=>{this.assignWork();}}
                     title="Assign"
                     type="solid"

@@ -5,6 +5,7 @@ import React from 'react';
 import { Button, Text, View } from 'react-native';
 import { NavigationParams } from 'react-navigation';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+// screen that is only used to logout for now
 interface Props extends NavigationParams {}
 interface States {}
 
@@ -12,6 +13,7 @@ export default class Setting extends React.Component<Props,States> {
     constructor(props:Props) {
         super(props);
     }
+    // delete the email, password and uid from the phone storage
     async logout(navigation:any) {
         console.log('Logout');
         navigation.reset({

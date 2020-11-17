@@ -5,6 +5,8 @@ import { View, StyleSheet } from 'react-native';
 import { NavigationParams } from 'react-navigation';
 import { Input, Button} from 'react-native-elements';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
+// add new patient that is not in the calllog
+// not working at the moment
 interface Props extends NavigationParams{}
 interface States {
     phoneNumber:string;

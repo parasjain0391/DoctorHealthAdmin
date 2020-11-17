@@ -18,6 +18,7 @@ export default class ListDoctor extends React.Component<Props,States> {
             ],
         };
     }
+    // called when the screen is loaded and gets the doctors information form the database
     componentDidMount() {
         database()
         .ref('/user')
@@ -37,6 +38,7 @@ export default class ListDoctor extends React.Component<Props,States> {
           })
         .catch(err => {console.log(err);});
     }
+    // function to view the detail of the doctor
     viewDoctorDetail(doctor:any) {
         //code to view doctor detail
         console.log(doctor.firstName + ' ' + doctor.lastName + ' Details');

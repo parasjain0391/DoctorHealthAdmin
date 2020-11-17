@@ -23,6 +23,7 @@ interface States {
 }
 export default class ListWork extends React.Component<Props,States> {
     _isMounted:boolean;uid:string;
+    // get the uid saved in the mobile
     async getuid() {
       const uid:any = await AsyncStorage.getItem('uid');
       return uid;
@@ -35,10 +36,12 @@ export default class ListWork extends React.Component<Props,States> {
         calls: [],
       };
     }
+    // navigate to add work screen to add work which are not present in the callog
     addWork() {
         this.props.navigation.navigate('AddWork');
         console.log('Add Work');
     }
+    // get the callog from the phone so that they can be assigned later
     async getCallLogs() {
         if (Platform.OS !== 'ios') {
           try {
@@ -68,20 +71,16 @@ export default class ListWork extends React.Component<Props,States> {
           );
         }
       }
+      // called when the screen is loaded
       componentDidMount() {
         this._isMounted = true;
         this._isMounted && this.getCallLogs();
       }
+      // update the calllog in realtime
       componentDidUpdate() {
         CallLogs.load(100).then((calls: any) => this._isMounted && this.setState({calls}));
-        if (this.uid !== 'null') {
-          // database()
-          // .ref('/users/' + String(this.uid))
-          // .set(this.state.calls);
-          //.then(() => console.log('Data set.'));
-          // The console print is removed due to extra screen space in node
-        }
       }
+      // return the correct all icon for the call type
       getCallIcon(type:string) {
         if (type === 'INCOMING'){
           return <Icon
@@ -105,6 +104,7 @@ export default class ListWork extends React.Component<Props,States> {
           return;
         }
       }
+      // UI element of the call Logs
       renderCalls() {
         return this.state.calls.map(call => {
           return <ListItem key={call.timestamp}

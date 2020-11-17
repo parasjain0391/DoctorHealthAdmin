@@ -37,6 +37,7 @@ export default class AddDoctor extends React.Component<Props,States> {
             email:'',
         };
     }
+    // update the new user information to the database
     updateDatabase(UserCredential:any) {
         const user:any = {};
         user.firstName = this.state.firstName;
@@ -48,6 +49,7 @@ export default class AddDoctor extends React.Component<Props,States> {
         .set(user)
         .catch(err=>{console.log(err);});
     }
+    // create new user in the firebase and add the information to the database.
     createUser() {
         auth()
         .createUserWithEmailAndPassword(this.state.email.trim(), this.state.password)
@@ -104,6 +106,7 @@ export default class AddDoctor extends React.Component<Props,States> {
                         title="Create User"
                         buttonStyle={{ backgroundColor:'#33ff49' }}
                         containerStyle={{ margin:10 }}
+                        // start the create user process
                         onPress={() => {
                             this.createUser();
                         }}

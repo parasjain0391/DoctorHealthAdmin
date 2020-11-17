@@ -4,6 +4,7 @@ import { NavigationParams } from 'react-navigation';
 import {createStackNavigator} from '@react-navigation/stack';
 import ListDoctor from './Doctor/ListDoctor';
 import AddDoctor from './Doctor/AddDoctor';
+// it is a stack navigator that deals with the doctor management
 const Stack = createStackNavigator();
 interface Props extends NavigationParams{}
 interface States {}
