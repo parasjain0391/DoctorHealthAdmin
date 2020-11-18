@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import { NavigationParams } from 'react-navigation';
 import { Input, Button} from 'react-native-elements';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -12,15 +12,30 @@ interface States {
     phoneNumber:string;
 }
 export default class AddWork extends React.Component<Props,States> {
+    call:any
     constructor(props:Props){
         super(props);
+        this.call = {
+            'phoneNumber': '',
+            'timestamp': '',
+            'rawType': '',
+            'type': '',
+            'duration': '',
+            'name': '',
+            'dateTime': '',
+        };
         this.state = {
             phoneNumber:'',
         };
     }
-    addPatient() {
-        console.log(this.state.phoneNumber + ' is added to the work');
-        this.props.navigation.navigate('ListWork');
+    assignAddedPatient() {
+        if (String(this.state.phoneNumber).length < 10)
+        {
+            Alert.alert('The Phone Number must be 10 digit number');
+        } else {
+        this.call.phoneNumber = this.state.phoneNumber;
+        this.props.navigation.navigate('AssignWork',{call:this.call});
+        }
     }
     render() {
         return (
@@ -41,8 +56,8 @@ export default class AddWork extends React.Component<Props,States> {
                 titleStyle={styles.buttontitle}
             />
             <Button
-                onPress={()=>{this.addPatient();}}
-                title="Save"
+                onPress={()=>{this.assignAddedPatient();}}
+                title="Assign"
                 type="outline"
                 buttonStyle={styles.button}
                 titleStyle={styles.buttontitle}
