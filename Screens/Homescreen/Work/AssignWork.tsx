@@ -60,7 +60,7 @@ export default class AssignWork extends React.Component<Props,States> {
                 {'uid':'1','name':'Paras1'},
             ],
         };
-        this.time = {'date':'','year':'','month':'','hours':'','min':'','sec':'' };
+        this.time = {'date':'','year':'','month':'','hours':'','min':'','sec':'','timestamp':'' };
         this.selectedDoctor = {'name':'Not Selected','uid':''};
     }
     // Select the doctor is assigned to the variable and reflect it on the screen
@@ -105,6 +105,8 @@ export default class AssignWork extends React.Component<Props,States> {
             this.time.hours = new Date().getHours(); //Current Hours
             this.time.min = new Date().getMinutes(); //Current Minutes
             this.time.sec = new Date().getSeconds(); //Current Seconds
+            this.time.timestamp = new Date().getTime();
+            console.log(this.time.timestamp);
             const assign = {
                 'phoneNumber': call.phoneNumber,
                 'timestamp': call.timestamp,
