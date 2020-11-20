@@ -97,6 +97,13 @@ export default class AssignWork extends React.Component<Props,States> {
             return;
         } else {
             const {call} = this.props.route.params;
+            var time:any;
+            time.date = new Date().getDate(); //Current Date
+            time.month = new Date().getMonth() + 1; //Current Month
+            time.year = new Date().getFullYear(); //Current Year
+            time.hours = new Date().getHours(); //Current Hours
+            time.min = new Date().getMinutes(); //Current Minutes
+            time.sec = new Date().getSeconds(); //Current Seconds
             const assign = {
                 'phoneNumber': call.phoneNumber,
                 'timestamp': call.timestamp,
@@ -108,6 +115,9 @@ export default class AssignWork extends React.Component<Props,States> {
                 'assignTo': this.selectedDoctor.firstName + ' ' + this.selectedDoctor.lastName,
                 'uid': this.selectedDoctor.uid,
                 'status':'Pending',
+                'assignedTime':time,
+                'statusUpdateTime':null,
+                'turnAroundTime':null,
             };
             console.log(assign);
             database()

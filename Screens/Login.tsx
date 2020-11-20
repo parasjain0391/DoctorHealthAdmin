@@ -92,7 +92,7 @@ export default class Login extends React.Component<Props,States> {
             } else {
                 Alert.alert('User is not an admin');
             }
-        }).catch(err => {Alert.alert(err);});
+        }).catch(err => {Alert.alert(String(err));});
     }
     // Called after login button is pressed and authenticate the user with the firebase and call the loginsuccess to handle after authorization
     loginHandler() {
