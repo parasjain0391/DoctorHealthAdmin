@@ -31,10 +31,8 @@ export default class ListDoctor extends React.Component<Props,States> {
                 if (i.role === 0){
                     doctors.push(i);
                 }
-                console.log(i);
             });
             this.setState({ doctors: doctors });
-            console.log(this.state.doctors);
           })
         .catch(err => {console.log(err);});
     }
