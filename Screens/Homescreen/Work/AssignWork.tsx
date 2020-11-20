@@ -117,8 +117,8 @@ export default class AssignWork extends React.Component<Props,States> {
                 'uid': this.selectedDoctor.uid,
                 'status':'Pending',
                 'assignedTime':this.time,
-                'statusUpdateTime':null,
-                'turnAroundTime':null,
+                'statusUpdateTime':'',
+                'turnAroundTime':'',
             };
             console.log(assign);
             database()
