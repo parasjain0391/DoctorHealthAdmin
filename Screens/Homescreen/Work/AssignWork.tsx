@@ -52,6 +52,7 @@ interface States {
 }
 export default class AssignWork extends React.Component<Props,States> {
     selectedDoctor:any;
+    time:any;
     constructor(props:Props) {
         super(props);
         this.state = {
@@ -59,6 +60,7 @@ export default class AssignWork extends React.Component<Props,States> {
                 {'uid':'1','name':'Paras1'},
             ],
         };
+        this.time = {'date':'','year':'','month':'','hours':'','min':'','sec':'' };
         this.selectedDoctor = {'name':'Not Selected','uid':''};
     }
     // Select the doctor is assigned to the variable and reflect it on the screen
@@ -97,13 +99,12 @@ export default class AssignWork extends React.Component<Props,States> {
             return;
         } else {
             const {call} = this.props.route.params;
-            var time:any;
-            time.date = new Date().getDate(); //Current Date
-            time.month = new Date().getMonth() + 1; //Current Month
-            time.year = new Date().getFullYear(); //Current Year
-            time.hours = new Date().getHours(); //Current Hours
-            time.min = new Date().getMinutes(); //Current Minutes
-            time.sec = new Date().getSeconds(); //Current Seconds
+            this.time.date = new Date().getDate(); //Current Date
+            this.time.month = new Date().getMonth() + 1; //Current Month
+            this.time.year = new Date().getFullYear(); //Current Year
+            this.time.hours = new Date().getHours(); //Current Hours
+            this.time.min = new Date().getMinutes(); //Current Minutes
+            this.time.sec = new Date().getSeconds(); //Current Seconds
             const assign = {
                 'phoneNumber': call.phoneNumber,
                 'timestamp': call.timestamp,
@@ -115,7 +116,7 @@ export default class AssignWork extends React.Component<Props,States> {
                 'assignTo': this.selectedDoctor.firstName + ' ' + this.selectedDoctor.lastName,
                 'uid': this.selectedDoctor.uid,
                 'status':'Pending',
-                'assignedTime':time,
+                'assignedTime':this.time,
                 'statusUpdateTime':null,
                 'turnAroundTime':null,
             };
