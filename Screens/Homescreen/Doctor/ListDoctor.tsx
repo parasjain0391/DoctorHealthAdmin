@@ -40,6 +40,7 @@ export default class ListDoctor extends React.Component<Props,States> {
     viewDoctorDetail(doctor:any) {
         //code to view doctor detail
         console.log(doctor.firstName + ' ' + doctor.lastName + ' Details');
+        this.props.navigation.navigate('DoctorPerformance',{doctor:doctor});
     }
     renderDoctor() {
         return this.state.doctors.map(doctor => {

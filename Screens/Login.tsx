@@ -50,7 +50,7 @@ export default class Login extends React.Component<Props,States> {
     // Store the password for the persist login
     async setPassword(password:any) {
         await AsyncStorage.setItem('password',password);
-        console.log('Set Password ' + password);
+        console.log('Password Set');
     }
     // Store the uid for further usage in the app by the other screens
     async setuid(uid:any) {

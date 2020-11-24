@@ -127,9 +127,15 @@ export default class ListWork extends React.Component<Props,States> {
               Need to add a button to load all call*/}
             </ScrollView>
             <FAB
+                style={styles.fab2}
+                label="Assign"
+                icon="clipboard-text"
+                onPress={() => {console.log('Add button pressed'); this.props.navigation.navigate('AssignMultipleWork');}}
+            />
+            <FAB
                 style={styles.fab}
                 icon="plus"
-                onPress={() => {console.log('Add button pressed'); this.props.navigation.navigate('AddWork');}}
+                onPress={() => {console.log('Add button pressed'); this.props.navigation.navigate('AddWork', );}}
             />
           </View>
         );
@@ -141,6 +147,12 @@ const styles = StyleSheet.create({
         position:'absolute',
         bottom:10,
         right:10,
+    },
+    fab2: {
+        alignSelf:'flex-end',
+        position:'absolute',
+        bottom:13,
+        right:80,
     },
     container: {
         flex: 1,
