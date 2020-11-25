@@ -2,9 +2,10 @@
 import React from 'react';
 import { NavigationParams } from 'react-navigation';
 import {createStackNavigator} from '@react-navigation/stack';
-import ListWork from './Work/ListWork';
-import AddWork from './Work/AddWork';
-import AssignWork from './Work/AssignWork';
+import ListWork from './MultiWork/ListWork';
+import AddWork from './MultiWork/AddWork';
+import AssignWork from './MultiWork/AssignWork';
+import ListPatients from './MultiWork/ListPatients';
 // default tab in the Homescreen
 // deal with the patient and thier assignment
 const Stack = createStackNavigator();
@@ -17,17 +18,22 @@ export default class Work extends React.Component<Props,States> {
                 <Stack.Screen
                     name="ListWork"
                     component={ListWork}
-                    options={{title: 'ListWork'}}
+                    options={{title: 'Call Log'}}
                 />
                 <Stack.Screen
                     name="AddWork"
                     component={AddWork}
-                    options={{title: 'AddWork'}}
+                    options={{title: 'Add New Patient'}}
                 />
                 <Stack.Screen
                     name="AssignWork"
                     component={AssignWork}
-                    options={{title: 'AssignWork'}}
+                    options={{title: 'Assign Work'}}
+                />
+                <Stack.Screen
+                    name="ListPatients"
+                    component={ListPatients}
+                    options={{title: 'List of Unassigned Patients'}}
                 />
             </Stack.Navigator>
         );

@@ -3,12 +3,13 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View, Platform, PermissionsAndroid, Alert } from 'react-native';
 import { NavigationParams } from 'react-navigation';
-import { ListItem, Icon } from 'react-native-elements';
+import { ListItem, Icon, Button } from 'react-native-elements';
 //import database from '@react-native-firebase/database';
 // @ts-ignore
 import CallLogs from 'react-native-call-log';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {FAB} from 'react-native-paper';
+import database from '@react-native-firebase/database';
 interface Props extends NavigationParams{}
 interface States {
     calls: {
@@ -25,8 +26,8 @@ export default class ListWork extends React.Component<Props,States> {
     _isMounted:boolean;uid:string;
     // get the uid saved in the mobile
     async getuid() {
-      const uid:any = await AsyncStorage.getItem('uid');
-      return uid;
+        const uid:any = await AsyncStorage.getItem('uid');
+        return uid;
     }
     constructor(props: Props) {
       super(props);
@@ -35,11 +36,6 @@ export default class ListWork extends React.Component<Props,States> {
       this.state = {
         calls: [],
       };
-    }
-    // navigate to add work screen to add work which are not present in the callog
-    addWork() {
-        this.props.navigation.navigate('AddWork');
-        console.log('Add Work');
     }
     // get the callog from the phone so that they can be assigned later
     async getCallLogs() {
@@ -80,41 +76,53 @@ export default class ListWork extends React.Component<Props,States> {
       componentDidUpdate() {
         CallLogs.load(100).then((calls: any) => this._isMounted && this.setState({calls}));
       }
-      // return the correct all icon for the call type
-      getCallIcon(type:string) {
-        if (type === 'INCOMING'){
-          return <Icon
-          name="call-received"
-          size={22}
-          color="#2E86C1"
-          />;
-        } else if (type === 'OUTGOING'){
-          return <Icon
-          name="call-made"
-          size={22}
-          color="#33ff49"
-          />;
-        } else if (type === 'MISSED'){
-          return <Icon
-          name="call-missed"
-          size={22}
-          color="#ff0000"
-          />;
-        } else {
-          return;
-        }
+      componentWillUnmount() {
+        this._isMounted = false;
       }
+      // add patient to the database
+      addPatient(call:any) {
+        database()
+        .ref('/allPatients/' + String(call.phoneNumber))
+        .once('value')
+        .then((snapshot) => {
+          if (snapshot.exists())
+          {
+            Alert.alert('This number is already assigned or added');
+          }
+          else {
+            database()
+            .ref('/allPatients/' + String(call.phoneNumber))
+            .set(call.phoneNumber)
+            .catch(err=>{console.log(String(err));});
+            database()
+            .ref('/work/unassignedWork/' + String(call.phoneNumber))
+            .set(call)
+            .catch(err=>{console.log(String(err));});
+          }
+        });
+      }
+      // return the correct all icon for the call type
       // UI element of the call Logs
       renderCalls() {
         return this.state.calls.map(call => {
           return <ListItem key={call.timestamp}
-          onPress={()=>{this.props.navigation.navigate('AssignWork',{call:call});}}
+              onPress={()=>{this.props.navigation.navigate('AssignWork',{call:call});}}
               bottomDivider>
               <ListItem.Content>
               <ListItem.Title>{(call.name === null) ? call.phoneNumber : call.name}</ListItem.Title>
               <ListItem.Subtitle>{call.phoneNumber}</ListItem.Subtitle>
               </ListItem.Content>
-              {this.getCallIcon(call.type)}
+                <Button
+                    icon={
+                        <Icon
+                        name="plus"
+                        type="font-awesome"
+                        size={22}
+                    />}
+                    buttonStyle={styles.button}
+                    type="clear"
+                    onPress={()=> {this.addPatient(call);}}
+                />
             </ListItem>;
         });
       }
@@ -122,14 +130,20 @@ export default class ListWork extends React.Component<Props,States> {
         return (
           <View style={styles.container}>
             <ScrollView>
-              <View style={{flex:1, backgroundColor:'white'}}>{this.renderCalls()}</View>
-              {/* Only Load 100 Logs
-              Need to add a button to load all call*/}
+              <View style={{flex:1, backgroundColor:'white'}}>
+                {this.renderCalls()}
+              </View>
             </ScrollView>
+            <FAB
+                style={styles.fab2}
+                label="Assign"
+                icon="clipboard-text"
+                onPress={() => {this.props.navigation.navigate('ListPatients');}}
+            />
             <FAB
                 style={styles.fab}
                 icon="plus"
-                onPress={() => {console.log('Add button pressed'); this.props.navigation.navigate('AddWork', );}}
+                onPress={() => {this.props.navigation.navigate('AddWork', );}}
             />
           </View>
         );
@@ -143,10 +157,10 @@ const styles = StyleSheet.create({
         right:10,
     },
     fab2: {
-        alignSelf:'flex-end',
-        position:'absolute',
-        bottom:13,
-        right:80,
+      alignSelf:'flex-end',
+      position:'absolute',
+      bottom:13,
+      right:80,
     },
     container: {
         flex: 1,
@@ -162,5 +176,11 @@ const styles = StyleSheet.create({
         fontSize: 16,
         marginVertical: 10,
         color: '#33ff49',
+    },
+    button: {
+        flex: 1,
+        backgroundColor: 'white',
+        paddingVertical: 0,
+        paddingHorizontal: 17,
     },
   });

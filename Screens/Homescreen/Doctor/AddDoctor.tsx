@@ -47,7 +47,7 @@ export default class AddDoctor extends React.Component<Props,States> {
         database()
         .ref('/user/' + UserCredential.user.uid)
         .set(user)
-        .catch(err=>{console.log(err);});
+        .catch(err=>{console.log(String(err));});
     }
     // create new user in the firebase and add the information to the database.
     createUser() {
