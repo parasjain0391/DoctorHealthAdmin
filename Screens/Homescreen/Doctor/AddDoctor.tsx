@@ -2,6 +2,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import { View, StyleSheet, Alert } from 'react-native';
+import { Picker } from '@react-native-community/picker';
 import { Input, Button } from 'react-native-elements';
 import { NavigationParams } from 'react-navigation';
 import auth from '@react-native-firebase/auth';
@@ -26,6 +27,7 @@ interface States {
     password:string,
     firstName:string,
     lastName:string,
+    role:number;
 }
 export default class AddDoctor extends React.Component<Props,States> {
     constructor(props:Props) {
@@ -35,6 +37,7 @@ export default class AddDoctor extends React.Component<Props,States> {
             lastName:'',
             password:'',
             email:'',
+            role:-1,
         };
     }
     // update the new user information to the database
@@ -43,7 +46,7 @@ export default class AddDoctor extends React.Component<Props,States> {
         user.firstName = this.state.firstName;
         user.lastName = this.state.lastName;
         user.email = this.state.email;
-        user.role = 0;
+        user.role = this.state.role;
         database()
         .ref('/user/' + UserCredential.user.uid)
         .set(user)
@@ -57,6 +60,7 @@ export default class AddDoctor extends React.Component<Props,States> {
             console.log('User account created');
             auth().signInWithEmailAndPassword(this.state.email.trim(), this.state.password)
             .then(UserCredential=>this.updateDatabase(UserCredential),(err:any)=>{Alert.alert(String(err));});
+            this.props.navigation.navigate('ListDoctor');
         })
         .catch(error => {
             if (error.code === 'auth/email-already-in-use') {
@@ -68,7 +72,6 @@ export default class AddDoctor extends React.Component<Props,States> {
             console.log('That email address is invalid!');
             Alert.alert('That email address is invalid!');
             }
-
             console.error(error);
         });
 
@@ -100,6 +103,16 @@ export default class AddDoctor extends React.Component<Props,States> {
                         value={this.state.password}
                         leftIcon={{ type:'font-awesome', name:'key'}}
                         onChangeText={(text) => this.setState({ password : text })} />
+                    <Picker
+                        selectedValue={this.state.role}
+                        style={{ height: 50 }}
+                        onValueChange={(itemValue:any) => this.setState({role:itemValue})}
+                    >
+                        <Picker.Item label="Doctor" value="Doctor" />
+                        <Picker.Item label="Admin" value="Admin" />
+                        <Picker.Item label="NA Handler" value="NA Handler" />
+                        <Picker.Item label="Price Negotiator" value="Price Negotiator" />
+                   </Picker>
                 </View>
                 <View style={styles.button}>
                     <Button

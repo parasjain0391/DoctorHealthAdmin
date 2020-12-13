@@ -80,7 +80,7 @@ export default class Login extends React.Component<Props,States> {
         .once('value')
         .then(snapshot => {
             const userdata = snapshot.val();
-            if (userdata.role === 1) {
+            if (userdata.role === 'Admin') {
                 this.props.navigation.reset({
                     index: 0,
                     routes: [{ name: 'Homescreen' }],

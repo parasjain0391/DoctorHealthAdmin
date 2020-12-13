@@ -90,6 +90,7 @@ export default class ListWork extends React.Component<Props,States> {
             Alert.alert('This number is already assigned or added');
           }
           else {
+            call.phoneNumber = call.phoneNumber % 10000000000;
             database()
             .ref('/allPatients/' + String(call.phoneNumber))
             .set(call.phoneNumber)
@@ -101,17 +102,48 @@ export default class ListWork extends React.Component<Props,States> {
           }
         });
       }
+      // get the correct call icon
+      getCallIcon(type:string) {
+        if (type === 'INCOMING'){
+          return <Icon
+          name="call-received"
+          size={22}
+          color="#2E86C1"
+          />;
+        } else if (type === 'OUTGOING'){
+          return <Icon
+          name="call-made"
+          size={22}
+          color="#33ff49"
+          />;
+        } else if (type === 'MISSED'){
+          return <Icon
+          name="call-missed"
+          size={22}
+          color="#ff0000"
+          />;
+        } else {
+          return;
+        }
+      }
+      getListTitle(call:any){
+        if (call.name !== null){
+          return call.name;
+        } else {
+          return call.phoneNumber;
+        }
+      }
       // return the correct all icon for the call type
       // UI element of the call Logs
       renderCalls() {
         return this.state.calls.map(call => {
           return <ListItem key={call.timestamp}
-              onPress={()=>{this.props.navigation.navigate('AssignWork',{call:call});}}
               bottomDivider>
               <ListItem.Content>
-              <ListItem.Title>{(call.name === null) ? call.phoneNumber : call.name}</ListItem.Title>
-              <ListItem.Subtitle>{call.phoneNumber}</ListItem.Subtitle>
+              <ListItem.Title>{this.getListTitle(call)}</ListItem.Title>
+              <ListItem.Subtitle>{call.dateTime.slice(0,11)}</ListItem.Subtitle>
               </ListItem.Content>
+                {this.getCallIcon(call.type)}
                 <Button
                     icon={
                         <Icon

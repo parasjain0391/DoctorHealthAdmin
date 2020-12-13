@@ -58,7 +58,7 @@ export default class ListWork extends React.Component<Props,States> {
         return this.state.calls.map((call:any) => {
           return <View key={call.timestamp}>
             <CheckBox
-            title={call.phoneNumber}
+            title={String(call.phoneNumber)}
             checked={call.isChecked}
             onPress={() => {call.isChecked = !call.isChecked; this.forceUpdate();}}
             />

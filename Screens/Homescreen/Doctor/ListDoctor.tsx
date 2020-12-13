@@ -28,7 +28,7 @@ export default class ListDoctor extends React.Component<Props,States> {
             snapshot.forEach((item:any)=>{
                 var i = item.val();
                 i.uid = item.key;
-                if (i.role === 0){
+                if (i.role !== 'Admin'){
                     doctors.push(i);
                 }
             });
@@ -49,7 +49,7 @@ export default class ListDoctor extends React.Component<Props,States> {
               bottomDivider>
               <ListItem.Content>
               <ListItem.Title>{doctor.firstName} {doctor.lastName}</ListItem.Title>
-              <ListItem.Subtitle>Doctor</ListItem.Subtitle>
+              <ListItem.Subtitle>{doctor.role}</ListItem.Subtitle>
               </ListItem.Content>
             </ListItem>;
         });
