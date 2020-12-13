@@ -1,10 +1,12 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable no-trailing-spaces */
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import { ScrollView, View, StyleSheet, Text, Alert } from 'react-native';
 import { NavigationParams } from 'react-navigation';
 import { ListItem, Button } from 'react-native-elements';
 import database from '@react-native-firebase/database';
+import moment from 'moment';
 // assign the patient to a doctor through this screen
 const styles = StyleSheet.create({
     body: {
@@ -52,7 +54,6 @@ interface States {
 }
 export default class AssignWork extends React.Component<Props,States> {
     selectedDoctor:any;
-    time:any;
     constructor(props:Props) {
         super(props);
         this.state = {
@@ -60,14 +61,7 @@ export default class AssignWork extends React.Component<Props,States> {
                 {'uid':'1','name':'Paras1'},
             ],
         };
-        this.time = {'date':'','year':'','month':'','hours':'','min':'','sec':'','timestamp':'' };
-        this.selectedDoctor = {'name':'Not Selected','uid':''};
-    }
-    // Select the doctor is assigned to the variable and reflect it on the screen
-    selectDoctor(doctor:any) {
-        this.selectedDoctor = doctor;
-        console.log(this.selectedDoctor.firstName + ' ' + this.selectedDoctor.lastName + ' is selected');
-        this.forceUpdate();
+        this.selectedDoctor = {'firstName':'Not','lastName':'Selected','uid':''};
     }
     // loaad the doctor information fromm the database and push it to local variable doctors
     componentDidMount() {
@@ -79,7 +73,7 @@ export default class AssignWork extends React.Component<Props,States> {
             snapshot.forEach((item:any)=>{
                 var i = item.val();
                 i.uid = item.key;
-                if (i.role === 0){
+                if (i.role === 'Doctor' || i.role === 'NA Handler' || i.role === 'Price Negotiator'){
                     doctors.push(i);
                 }
             });
@@ -87,67 +81,6 @@ export default class AssignWork extends React.Component<Props,States> {
           })
         .catch(err => {console.log(err);});
     }
-    // the patient is assigned to the doctor and the databse is updated
-    // After the assignment the sreen goes back to list work
-    assignMultipleWork() {
-        if (this.selectDoctor.name === 'Not Selected'){
-            Alert.alert('Please select a doctor');
-            return;
-        } else {
-            const {calls} = this.props.route.params;
-            calls.forEach((call:any) => {
-                this.assignWork(call);
-            });
-            this.props.navigation.navigate('ListWork');
-        }
-    }
-    async assignWork(call:any) {
-        // Code for work Assignment
-        var time = {'date':0,'year':0,'month':0,'hours':0,'min':0,'sec':0,'timestamp':0 };
-        time.date = new Date().getDate(); //Current Date
-        time.month = new Date().getMonth() + 1; //Current Month
-        time.year = new Date().getFullYear(); //Current Year
-        time.hours = new Date().getHours(); //Current Hours
-        time.min = new Date().getMinutes(); //Current Minutes
-        time.sec = new Date().getSeconds(); //Current Seconds
-        time.timestamp = new Date().getTime(); //current Timestamp
-        const assign = {
-            'phoneNumber': call.phoneNumber,
-            'timestamp': call.timestamp,
-            'rawType': call.rawType,
-            'type': call.type,
-            'duration': call.duration,
-            'name':call.name,
-            'dateTime':call.dateTime,
-            'assignTo': this.selectedDoctor.firstName + ' ' + this.selectedDoctor.lastName,
-            'uid': this.selectedDoctor.uid,
-            'status':'Pending',
-            'assignedTime':time,
-            'statusUpdateTime':'',
-            'turnAroundTime':'',
-        };
-        console.log(assign);
-        database()
-        .ref('/work/' + assign.uid)
-        .child(assign.phoneNumber)
-        .set(assign);
-        await database()
-        .ref('/work/unassignedWork/' + String(assign.phoneNumber))
-        .set(null);
-    }
-    // UI element of the doctors
-    renderDoctor() {
-        return this.state.doctors.map(doctor => {
-          return <ListItem key={doctor.uid}
-              onPress={()=> this.selectDoctor(doctor)}
-              bottomDivider>
-              <ListItem.Content>
-              <ListItem.Title>{doctor.firstName} {doctor.lastName}</ListItem.Title>
-              <ListItem.Subtitle>Doctor</ListItem.Subtitle>
-              </ListItem.Content>
-            </ListItem>;
-        });
-      }
     render() {
         return (
             <View style={styles.body}>
@@ -173,5 +106,122 @@ export default class AssignWork extends React.Component<Props,States> {
                 </View>
             </View>
         );
+    }
+    // UI element of the doctors
+    renderDoctor() {
+        return this.state.doctors.map(doctor => {
+          return <ListItem key={doctor.uid}
+              onPress={()=> this.selectDoctor(doctor)}
+              bottomDivider>
+              <ListItem.Content>
+              <ListItem.Title>{doctor.firstName} {doctor.lastName}</ListItem.Title>
+              <ListItem.Subtitle>{doctor.role}</ListItem.Subtitle>
+              </ListItem.Content>
+            </ListItem>;
+        });
+    }
+    // Select the doctor is assigned to the variable and reflect it on the screen
+    selectDoctor(doctor:any) {
+        this.selectedDoctor = doctor;
+        console.log(this.selectedDoctor.firstName + ' ' + this.selectedDoctor.lastName + ' is selected');
+        this.forceUpdate();
+    }
+    // the patient is assigned to the doctor and the database is updated
+    // After the assignment the sreen goes back to list work
+    assignMultipleWork() {
+        if (this.selectedDoctor.firstName === 'Not' && this.selectedDoctor.lastName === 'Selected' ){
+            Alert.alert('Please select a doctor');
+            return;
+        } else {
+            const {calls} = this.props.route.params;
+            var i:number = 0;
+            calls.forEach((call:any) => {
+                this.assignWork(call);
+                i++;
+            });
+            this.updatePerformance(this.selectedDoctor.uid,i);
+            this.props.navigation.navigate('ListWork');
+        }
+    }
+    async assignWork(call:any) {
+        const assign = {
+            'phoneNumber': call.phoneNumber,
+            'doctoruid': this.selectedDoctor.uid,
+            'statusUpdateDate':moment().format('YYYY-MM-DD'),
+            'status':'Pending',
+            'timeSpent':0,
+            'callsMade':0,
+            'assignedTo': this.selectedDoctor.firstName + ' ' + this.selectedDoctor.lastName,
+            'timestamp': moment().unix(),            
+        };
+        console.log(assign);
+        database()
+        .ref('/work/Pending/' + String(assign.doctoruid))
+        .child(String(assign.phoneNumber))
+        .set(assign)
+        .catch((err)=>{console.log(String(err));});
+        await database()
+        .ref('/work/unassignedWork/' + String(assign.phoneNumber))
+        .set(null)
+        .catch((err)=>{console.log(String(err));});
+    }
+    updatePerformance(uid:any,i:number){
+        database()
+        .ref('/doctorPerformance/' + String(uid))
+        .child('Pending')
+        .once('value')
+        .then((snapshot)=>{
+            if (snapshot.exists()){
+                database()
+                .ref('/doctorPerformance/' + String(uid))
+                .update({
+                    Pending:snapshot.val() + i,
+                })
+                .catch((err)=>{console.log(String(err));});
+            } else {
+                database()
+                .ref('/doctorPerformance/' + String(uid))
+                .update({
+                    Pending:i,
+                })
+                .catch((err)=>{console.log(String(err));});
+            }
+        })
+        .catch((err)=>{console.log(String(err));});
+        
+        //get a perfromance template and assigned count
+        database()
+        .ref('/doctorPerformance/' + String(uid))
+        .child(String(moment().format('YYYY-MM-DD')))
+        .once('value')
+        .then((snapshot)=>{
+            if (snapshot.exists()){
+                database()
+                .ref('/doctorPerformance/' + String(uid) + '/' + String(moment().format('YYYY-MM-DD')))
+                .update({
+                    Assigned:snapshot.val().Assigned + i,
+                })
+                .catch((err)=>{console.log(String(err));});
+            } else {
+                var freshPerformance = { 'Order Confirmed':0,
+                                    'Interested':0,
+                                    'Not Answered':0,
+                                    'Not Answered 2':0,
+                                    'Price Issue':0,
+                                    'Report Awaited':0,
+                                    'Not Interested':0,
+                                    'Assigned':i,
+                                    'Time Spent':0,
+                                    'Calls Made':0,
+                                    'Finally Confirmed':0,
+                                    'Order Declined':0};
+                console.log(freshPerformance);
+                database()
+                .ref('/doctorPerformance/' + String(uid) + '/' + String(moment().format('YYYY-MM-DD')))
+                .set(freshPerformance)
+                .catch((err)=>{console.log(String(err));});
+            }
+        })
+        .catch((err)=>{console.log(String(err));});
     }
 }

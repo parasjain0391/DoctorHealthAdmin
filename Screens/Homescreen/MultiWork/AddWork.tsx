@@ -6,6 +6,7 @@ import { NavigationParams } from 'react-navigation';
 import { Input, Button} from 'react-native-elements';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import database from '@react-native-firebase/database';
+import moment from 'moment';
 // add new patient that is not in the calllog
 // not working at the moment
 interface Props extends NavigationParams{}
@@ -23,7 +24,7 @@ export default class AddWork extends React.Component<Props,States> {
             'type': '',
             'duration': '',
             'name': '',
-            'dateTime': '',
+            'dateTime': moment().format('YYYY-MM-DD'),
         };
         this.state = {
             phoneNumber:'',
@@ -41,7 +42,7 @@ export default class AddWork extends React.Component<Props,States> {
             .then((snapshot) => {
             if (snapshot.exists())
             {
-                Alert.alert('This number is already assigned or added');
+                Alert.alert(this.call.phoneNumber + ' is already assigned or added');
             }
             else {
                 database()

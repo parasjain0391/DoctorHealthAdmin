@@ -81,16 +81,16 @@ export default class ListWork extends React.Component<Props,States> {
       }
       // add patient to the database
       addPatient(call:any) {
+        call.phoneNumber = call.phoneNumber % 10000000000;
         database()
         .ref('/allPatients/' + String(call.phoneNumber))
         .once('value')
         .then((snapshot) => {
           if (snapshot.exists())
           {
-            Alert.alert('This number is already assigned or added');
+            Alert.alert(String(call.phoneNumber) + ' is already assigned or added');
           }
           else {
-            call.phoneNumber = call.phoneNumber % 10000000000;
             database()
             .ref('/allPatients/' + String(call.phoneNumber))
             .set(call.phoneNumber)
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         padding: 10,
     },
-    itleText: {
+    titleText: {
         fontSize: 22,
         textAlign: 'center',
         fontWeight: 'bold',

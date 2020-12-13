@@ -1,41 +1,28 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable react-native/no-inline-styles */
-/* eslint-disable prettier/prettier */
 import React from 'react';
-import { Button, Text, View } from 'react-native';
 import { NavigationParams } from 'react-navigation';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-// screen that is only used to logout for now
-interface Props extends NavigationParams {}
+import {createStackNavigator} from '@react-navigation/stack';
+import Options from './Setting/Options';
+import OverallReport from './Setting/OverallReport';
+// it is a stack navigator that deals with the doctor management
+const Stack = createStackNavigator();
+interface Props extends NavigationParams{}
 interface States {}
-
-export default class Setting extends React.Component<Props,States> {
-    constructor(props:Props) {
-        super(props);
-    }
-    // delete the email, password and uid from the phone storage
-    async logout(navigation:any) {
-        console.log('Logout');
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'Login' }],
-        });
-        await AsyncStorage.removeItem('email');
-        await AsyncStorage.removeItem('password');
-        await AsyncStorage.removeItem('uid');
-    }
+export default class Work extends React.Component<Props,States> {
     render() {
         return (
-            <View>
-                <Text>Settings Screen</Text>
-                <View style={{justifyContent:'flex-end', flexDirection:'column-reverse'}}>
-                    <Button
-                        onPress={()=>{this.logout(this.props.navigation);}}
-                        title="Logout"
-                        color="#33ff49"
-                        accessibilityLabel="Learn more about this purple button" />
-                </View>
-            </View>
+            <Stack.Navigator initialRouteName="Options">
+                <Stack.Screen
+                    name="Options"
+                    component={Options}
+                    options={{title: 'Options'}}
+                />
+                <Stack.Screen
+                    name="Overall Report"
+                    component={OverallReport}
+                    options={{title: 'Overall Report'}}
+                />
+            </Stack.Navigator>
         );
     }
 }

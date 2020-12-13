@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
 import { NavigationParams } from 'react-navigation';
 import { CheckBox, Button } from 'react-native-elements';
 import database from '@react-native-firebase/database';
@@ -46,12 +46,18 @@ export default class ListWork extends React.Component<Props,States> {
     //Assign the checkboxed patients
     assignMultipleWork() {
         var c:any = [];
+        var flag = false;
         this.state.calls.forEach((item:any)=>{
             if (item.isChecked) {
                 c.push(item);
+                flag = true;
             }
         });
-        this.props.navigation.navigate('AssignWork',{calls:c});
+        if (flag){
+          this.props.navigation.navigate('AssignWork',{calls:c});
+        } else {
+          Alert.alert('Please Select at least one patient to be assigned');
+        }
     }
       // UI element of the call Logs
       renderCalls() {

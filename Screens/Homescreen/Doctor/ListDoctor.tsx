@@ -53,7 +53,7 @@ export default class ListDoctor extends React.Component<Props,States> {
               </ListItem.Content>
             </ListItem>;
         });
-      }
+    }
     render() {
         return (
             <View style={styles.body}>

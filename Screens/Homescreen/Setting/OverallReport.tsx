@@ -1,14 +1,13 @@
 /* eslint-disable prettier/prettier */
 import React from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView } from 'react-native';
 import { NavigationParams } from 'react-navigation';
-import {ListItem} from 'react-native-elements';
-import {FAB} from 'react-native-paper';
+import { ListItem } from 'react-native-elements';
 import database from '@react-native-firebase/database';
+import { FAB } from 'react-native-paper';
 import moment from 'moment';
-//import {LineChart} from 'react-native-chart-kit';
-
-interface Props extends NavigationParams{}
+// screen that is only used to logout for now
+interface Props extends NavigationParams {}
 interface States {
     dataRecieved: {
         'Assigned':number,
@@ -27,12 +26,10 @@ interface States {
     Pending:number,
 }
 
-export default class ListDoctor extends React.Component<Props,States> {
+export default class OverallReport extends React.Component<Props,States> {
     _isMounted:boolean
-    doctor:any
-    isLoading:boolean
     loadingStatus:string
-    constructor(props:Props){
+    constructor(props:Props) {
         super(props);
         this.state = {
             dataRecieved:{
@@ -52,54 +49,13 @@ export default class ListDoctor extends React.Component<Props,States> {
             Pending:0,
         };
         this._isMounted = false;
-        this.doctor = '';
-        this.isLoading = false;
         this.loadingStatus = 'Loading';
     }
-
-    // callLineChart() {
-    //     var label:any = [];
-    //     var calldata:any = [];
-    //     this.state.dataRecieved.forEach(element => {
-    //         label.push(element.Date.substring(0,5));
-    //         calldata.push(element.calls);
-    //     });
-    //     return <LineChart
-    //         data={{
-    //             labels: label,
-    //             datasets: [
-    //             {
-    //                 data: calldata,
-    //                 strokeWidth: 2,
-    //             },
-    //             ],
-    //         }}
-    //         width={Dimensions.get('window').width - 16}
-    //         height={220}
-    //         chartConfig={{
-    //             backgroundColor: '#1cc910',
-    //             backgroundGradientFrom: '#eff3ff',
-    //             backgroundGradientTo: '#efefef',
-    //             decimalPlaces: 2,
-    //             color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-    //             style: {
-    //             borderRadius: 16,
-    //             },
-    //         }}
-    //         style={{
-    //             marginVertical: 8,
-    //             borderRadius: 16,
-    //         }}
-    //     />;
-    // }
-    componentDidMount(){
+    componentDidMount() {
         this._isMounted = true;
-        this.isLoading = false;
-        const {doctor} = this.props.route.params;
-        this.doctor = doctor;
-        this._isMounted && this.getParameter(this.doctor,1);
+        this._isMounted && this.getParameter(1);
     }
-    componentWillUnmount(){
+    componentWillUnmount() {
         this._isMounted = false;
     }
     render() {
@@ -112,19 +68,19 @@ export default class ListDoctor extends React.Component<Props,States> {
                 style={styles.fab1}
                 label="1"
                 icon="clipboard-text"
-                onPress={() => {this._isMounted && this.getParameter(this.doctor,1);}}
+                onPress={() => {this._isMounted && this.getParameter(1);}}
                 />
                 <FAB
                 style={styles.fab7}
                 label="7"
                 icon="clipboard-text"
-                onPress={() => {this._isMounted && this.getParameter(this.doctor,7);}}
+                onPress={() => {this._isMounted && this.getParameter(7);}}
                 />
                 <FAB
                 style={styles.fab30}
                 label="30"
                 icon="clipboard-text"
-                onPress={() => {this._isMounted && this.getParameter(this.doctor,30);}}
+                onPress={() => {this._isMounted && this.getParameter(30);}}
                 />
             </View>
         );
@@ -217,18 +173,8 @@ export default class ListDoctor extends React.Component<Props,States> {
                 </ListItem>
             </View>;
     }
-    getParameter(doctor:any,i:number){
-        this.isLoading = true;
-        const ref = database()
-        .ref('/doctorPerformance/' + String(doctor.uid));
-        ref
-        .child('Pending')
-        .once('value')
-        .then((dataSnapShot)=>{
-            this.setState({Pending:dataSnapShot.val()});
-        })
-        .catch((err)=>{console.log(String(err));});
-        var dR = {
+    getParameter(i:number){
+        let dR = {
             'Assigned':0,
             'Not Interested':0,
             'Interested':0,
@@ -242,26 +188,35 @@ export default class ListDoctor extends React.Component<Props,States> {
             'Finally Confirmed':0,
             'Order Declined':0,
         };
-        for (let j = 0; j < i; j++) {
-            ref
-            .child(String(moment().subtract(j,'days').format('YYYY-MM-DD')))
-            .once('value')
-            .then((snapshot)=>{
-                if (snapshot.exists())
-                {
-                    snapshot.forEach((perParameter:any)=>{
-                        dR[String(perParameter.key)] += perParameter.val();
-                        this.setState({dataRecieved:dR});
-                    });
-                } else if (i === 1){
-                    Alert.alert('This Doctor is not assigned any Patient today');
+        let Pending = 0;
+        const ref = database()
+        .ref('/doctorPerformance');
+        ref
+        .once('value')
+        .then((dataSnapShot)=>{
+            dataSnapShot.forEach((doctor:any)=>{
+                Pending += doctor.child('Pending').val();
+                for (let j = 0; j < i; j++) {
+                    ref
+                    .child(String(doctor.key))
+                    .child(String(moment().subtract(j,'days').format('YYYY-MM-DD')))
+                    .once('value')
+                    .then((snapshot)=>{
+                        if (snapshot.exists()){
+                            snapshot.forEach((perParameter:any)=>{
+                                dR[String(perParameter.key)] += perParameter.val();
+                            });
+                            this.setState({dataRecieved:dR, Pending :Pending});
+                        }
+                    })
+                    .catch((err)=>{console.log(String(err));});
                 }
-            })
-            .catch((err)=>{console.log(String(err));});
-        }
-        this.loadingStatus = String(i) + ' days Status';    }
+            });
+        })
+        .catch((err)=>{console.log(String(err));});
+        this.loadingStatus = String(i) + ' day Status';
+    }
 }
-
 const styles = StyleSheet.create({
     fab1: {
         alignSelf:'flex-end',
@@ -281,13 +236,6 @@ const styles = StyleSheet.create({
         alignSelf:'flex-end',
         position:'absolute',
         bottom:130,
-        right:10,
-        backgroundColor:'#33ff49',
-    },
-    activity: {
-        alignSelf:'flex-end',
-        position:'absolute',
-        bottom:250,
         right:10,
         backgroundColor:'#33ff49',
     },
