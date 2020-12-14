@@ -126,13 +126,6 @@ export default class ListWork extends React.Component<Props,States> {
           return;
         }
       }
-      getListTitle(call:any){
-        if (call.name !== null){
-          return call.name;
-        } else {
-          return call.phoneNumber;
-        }
-      }
       // return the correct all icon for the call type
       // UI element of the call Logs
       renderCalls() {
@@ -140,7 +133,7 @@ export default class ListWork extends React.Component<Props,States> {
           return <ListItem key={call.timestamp}
               bottomDivider>
               <ListItem.Content>
-              <ListItem.Title>{this.getListTitle(call)}</ListItem.Title>
+              <ListItem.Title>{String(call.phoneNumber % 10000000000)}</ListItem.Title>
               <ListItem.Subtitle>{call.dateTime.slice(0,11)}</ListItem.Subtitle>
               </ListItem.Content>
                 {this.getCallIcon(call.type)}

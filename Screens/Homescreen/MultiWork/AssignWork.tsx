@@ -54,6 +54,8 @@ interface States {
 }
 export default class AssignWork extends React.Component<Props,States> {
     selectedDoctor:any;
+    _isMounted:any;
+    ref:any;
     constructor(props:Props) {
         super(props);
         this.state = {
@@ -61,25 +63,34 @@ export default class AssignWork extends React.Component<Props,States> {
                 {'uid':'1','name':'Paras1'},
             ],
         };
+        this.ref = database().ref('/user');
+        this._isMounted = false;
         this.selectedDoctor = {'firstName':'Not','lastName':'Selected','uid':''};
     }
     // loaad the doctor information fromm the database and push it to local variable doctors
     componentDidMount() {
-        database()
-        .ref('/user')
+        this._isMounted = true;
+        this._isMounted && this.ref
         .once('value')
-        .then((snapshot) => {
-            const doctors:any = [];
-            snapshot.forEach((item:any)=>{
-                var i = item.val();
-                i.uid = item.key;
-                if (i.role === 'Doctor' || i.role === 'NA Handler' || i.role === 'Price Negotiator'){
-                    doctors.push(i);
-                }
-            });
-            this.setState({ doctors: doctors });
-          })
-        .catch(err => {console.log(err);});
+        .then((snapshot:any)=>{this.loadDoctor(snapshot);})
+        .catch((err:any)=>{console.log(String(err));});
+        this.ref
+        .on('value',(snapshot:any)=>{this.loadDoctor(snapshot);});
+    }
+    componentWillUnmount(){
+        this._isMounted = false;
+        this.ref.off();
+    }
+    loadDoctor(snapshot:any){
+        const doctors:any = [];
+        snapshot.forEach((item:any)=>{
+            var i = item.val();
+            i.uid = item.key;
+            if (i.role !== 'Admin'){
+                doctors.push(i);
+            }
+        });
+        this.setState({ doctors: doctors });
     }
     render() {
         return (
@@ -98,7 +109,7 @@ export default class AssignWork extends React.Component<Props,States> {
                 />
                 <Button
                     // assign the work
-                    onPress={()=>{this.assignMultipleWork();}}
+                    onPress={()=>{this._isMounted && this.assignMultipleWork();}}
                     title="Assign"
                     type="solid"
                     buttonStyle={styles.button}
@@ -143,7 +154,7 @@ export default class AssignWork extends React.Component<Props,States> {
             this.props.navigation.navigate('ListWork');
         }
     }
-    async assignWork(call:any) {
+    assignWork(call:any) {
         const assign = {
             'phoneNumber': call.phoneNumber,
             'doctoruid': this.selectedDoctor.uid,
@@ -159,11 +170,11 @@ export default class AssignWork extends React.Component<Props,States> {
         .ref('/work/Pending/' + String(assign.doctoruid))
         .child(String(assign.phoneNumber))
         .set(assign)
-        .catch((err)=>{console.log(String(err));});
-        await database()
+        .catch((err)=>{console.log('/work/Pending/' + String(err));});
+        database()
         .ref('/work/unassignedWork/' + String(assign.phoneNumber))
         .set(null)
-        .catch((err)=>{console.log(String(err));});
+        .catch((err)=>{console.log('/work/unassignedWork/' + String(err));});
     }
     updatePerformance(uid:any,i:number){
         database()
@@ -177,17 +188,17 @@ export default class AssignWork extends React.Component<Props,States> {
                 .update({
                     Pending:snapshot.val() + i,
                 })
-                .catch((err)=>{console.log(String(err));});
+                .catch((err)=>{console.log('/doctorPerformance/' + String(err));});
             } else {
                 database()
                 .ref('/doctorPerformance/' + String(uid))
                 .update({
                     Pending:i,
                 })
-                .catch((err)=>{console.log(String(err));});
+                .catch((err)=>{console.log('/doctorPerformance/' + String(err));});
             }
         })
-        .catch((err)=>{console.log(String(err));});
+        .catch((err)=>{console.log('/doctorPerformance/' + String(err));});
         
         //get a perfromance template and assigned count
         database()

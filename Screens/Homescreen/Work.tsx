@@ -6,8 +6,6 @@ import ListWork from './MultiWork/ListWork';
 import AddWork from './MultiWork/AddWork';
 import AssignWork from './MultiWork/AssignWork';
 import ListPatients from './MultiWork/ListPatients';
-import ReConfirmedList from './MultiWork/ReConfirmedList';
-import ReConfirmedUpdate from './MultiWork/ReConfirmedUpdate';
 // default tab in the Homescreen
 // deal with the patient and thier assignment
 const Stack = createStackNavigator();
@@ -36,16 +34,6 @@ export default class Work extends React.Component<Props,States> {
                     name="ListPatients"
                     component={ListPatients}
                     options={{title: 'List of Unassigned Patients'}}
-                />
-                <Stack.Screen
-                    name="ReConfirmed List"
-                    component={ReConfirmedList}
-                    options={{title: 'List of confirmed order patient'}}
-                />
-                <Stack.Screen
-                    name="ReConfirmed Update"
-                    component={ReConfirmedUpdate}
-                    options={{title: 'Status Update'}}
                 />
             </Stack.Navigator>
         );

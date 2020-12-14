@@ -43,41 +43,40 @@ const styles = StyleSheet.create({
 export default class ReConfirmedList extends React.Component<Props,States> {
     uid:any
     _isMounted:boolean
+    ref:any
     constructor(props: Props) {
         super(props);
         this.state = {
             patients: [],
         };
         this._isMounted = false;
+        this.ref = database().ref('/work/Order Confirmed/');
     }
     async componentDidMount() {
         this._isMounted = true;
-        this.loadOrders();
-    }
-    // get the work detail if changes are made in the database
-    componentDidUpdate() {
-        this._isMounted && this.loadOrders();
+        this.ref
+        .once('value')
+        .then((snapshot:any) =>{this.loadOrders(snapshot);})
+        .catch((err:any) => {console.log(String(err));});
+        this.ref
+        .on('value',(snapshot:any) =>{this.loadOrders(snapshot);});
     }
     componentWillUnmount() {
         this._isMounted = false;
+        this.ref.off();
     }
-    loadOrders(){
-        database()
-        .ref('/work/Order Confirmed/')
-        .once('value')
-        .then((snapshot) => {
-            const patients:any = [];
-            snapshot.forEach((doctor:any)=>{
-                doctor.forEach((patient:any)=>{
-                    var p = patient.val();
-                    p.phoneNumber = patient.key;
-                    patients.push(p);
-                });
+    //Load the Patient list from the DataSnapshot
+    loadOrders(snapshot:any){
+        const patients:any = [];
+        snapshot.forEach((doctor:any)=>{
+            doctor.forEach((patient:any)=>{
+                var p = patient.val();
+                p.phoneNumber = patient.key;
+                patients.push(p);
             });
-            this.setState({ patients: patients });
-          })
-        .catch(err => {console.log(String(err));});
-    }
+        });
+        this.setState({ patients: patients });
+      }
     //UI element of the patient
     renderPatients() {
         return this.state.patients.map(patient =>{

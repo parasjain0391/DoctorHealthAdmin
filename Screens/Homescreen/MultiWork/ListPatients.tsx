@@ -6,18 +6,12 @@ import { NavigationParams } from 'react-navigation';
 import { CheckBox, Button } from 'react-native-elements';
 import database from '@react-native-firebase/database';
 // @ts-ignore
-import AsyncStorage from '@react-native-async-storage/async-storage';
 interface Props extends NavigationParams{}
 interface States {
     calls:any,
 }
 export default class ListWork extends React.Component<Props,States> {
     _isMounted:boolean;uid:string;
-    // get the uid saved in the mobile
-    async getuid() {
-        const uid:any = await AsyncStorage.getItem('uid');
-        return uid;
-    }
     constructor(props: Props) {
       super(props);
       this._isMounted = false;

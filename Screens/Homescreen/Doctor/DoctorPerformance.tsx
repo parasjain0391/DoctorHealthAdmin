@@ -225,7 +225,9 @@ export default class ListDoctor extends React.Component<Props,States> {
         .child('Pending')
         .once('value')
         .then((dataSnapShot)=>{
-            this.setState({Pending:dataSnapShot.val()});
+            if (dataSnapShot.exists()){
+                this.setState({Pending:dataSnapShot.val()});
+            }
         })
         .catch((err)=>{console.log(String(err));});
         var dR = {

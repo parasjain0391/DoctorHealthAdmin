@@ -11,30 +11,41 @@ interface States {
     doctors: any [],
 }
 export default class ListDoctor extends React.Component<Props,States> {
+    ref:any
+    _isMounted:boolean
     constructor(props:Props) {
         super(props);
         this.state = {
             doctors: [
             ],
         };
+        this._isMounted = false;
+        this.ref = database().ref('/user');
     }
     // called when the screen is loaded and gets the doctors information form the database
     componentDidMount() {
-        database()
-        .ref('/user')
+        this._isMounted = true;
+        this.ref
         .once('value')
-        .then((snapshot) => {
-            const doctors:any = [];
-            snapshot.forEach((item:any)=>{
-                var i = item.val();
-                i.uid = item.key;
-                if (i.role !== 'Admin'){
-                    doctors.push(i);
-                }
-            });
-            this.setState({ doctors: doctors });
-          })
-        .catch(err => {console.log(err);});
+        .then((snapshot:any) => {this.loadDoctor(snapshot);})
+        .catch((err:any)=> {console.log(String(err));});
+        this.ref
+        .on('value',(snapshot:any)=>{this.loadDoctor(snapshot);});
+    }
+    componentWillUnmount() {
+        this._isMounted = false;
+        this.ref.off();
+    }
+    loadDoctor(snapshot:any) {
+        const doctors:any = [];
+        snapshot.forEach((item:any)=>{
+            var i = item.val();
+            i.uid = item.key;
+            if (i.role !== 'Admin'){
+                doctors.push(i);
+            }
+        });
+        this.setState({ doctors: doctors });
     }
     // function to view the detail of the doctor
     viewDoctorDetail(doctor:any) {
