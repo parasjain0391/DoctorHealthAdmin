@@ -21,7 +21,8 @@ interface States {
         'Time Spent':number,
         'Calls Made':number,
         'Finally Confirmed':number,
-        'Order Declined':number
+        'Order Declined':number,
+        'Assigned Rejected':number,
     },
     Pending:number,
 }
@@ -45,6 +46,7 @@ export default class OverallReport extends React.Component<Props,States> {
                 'Time Spent':0,
                 'Finally Confirmed':0,
                 'Order Declined':0,
+                'Assigned Rejected':0,
             },
             Pending:0,
         };
@@ -103,6 +105,12 @@ export default class OverallReport extends React.Component<Props,States> {
                     bottomDivider>
                     <ListItem.Content>
                         <ListItem.Title>Pending: {this.state.Pending}</ListItem.Title>
+                    </ListItem.Content>
+                </ListItem>
+                <ListItem
+                    bottomDivider>
+                    <ListItem.Content>
+                        <ListItem.Title>Assigned Rejected: {this.state.dataRecieved['Assigned Rejected']}</ListItem.Title>
                     </ListItem.Content>
                 </ListItem>
                 <ListItem
@@ -187,6 +195,7 @@ export default class OverallReport extends React.Component<Props,States> {
             'Time Spent':0,
             'Finally Confirmed':0,
             'Order Declined':0,
+            'Assigned Rejected':0,
         };
         let Pending = 0;
         const ref = database()
@@ -206,7 +215,7 @@ export default class OverallReport extends React.Component<Props,States> {
                             snapshot.forEach((perParameter:any)=>{
                                 dR[String(perParameter.key)] += perParameter.val();
                             });
-                            this.setState({dataRecieved:dR, Pending :Pending});
+                            this._isMounted && this.setState({dataRecieved:dR, Pending :Pending});
                         }
                     })
                     .catch((err)=>{console.log(String(err));});
@@ -238,6 +247,9 @@ const styles = StyleSheet.create({
         bottom:130,
         right:10,
         backgroundColor:'#33ff49',
+    },
+    rowview: {
+        flexDirection:'row',
     },
     container: {
         flex: 1,

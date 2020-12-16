@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { StyleSheet, View, ScrollView } from 'react-native';
+import { StyleSheet, View, ScrollView, Alert } from 'react-native';
 // @ts-ignore
 import RNImmediatePhoneCall from 'react-native-immediate-phone-call';
 import { ListItem, Button, Icon } from  'react-native-elements';
@@ -55,10 +55,6 @@ export default class ReConfirmedList extends React.Component<Props,States> {
     async componentDidMount() {
         this._isMounted = true;
         this.ref
-        .once('value')
-        .then((snapshot:any) =>{this.loadOrders(snapshot);})
-        .catch((err:any) => {console.log(String(err));});
-        this.ref
         .on('value',(snapshot:any) =>{this.loadOrders(snapshot);});
     }
     componentWillUnmount() {
@@ -68,6 +64,10 @@ export default class ReConfirmedList extends React.Component<Props,States> {
     //Load the Patient list from the DataSnapshot
     loadOrders(snapshot:any){
         const patients:any = [];
+        if (!snapshot.exists()){
+            Alert.alert('There is no order pending for reconfirmation');
+            this.props.navigation.goBack();
+        }
         snapshot.forEach((doctor:any)=>{
             doctor.forEach((patient:any)=>{
                 var p = patient.val();
@@ -85,6 +85,7 @@ export default class ReConfirmedList extends React.Component<Props,States> {
                     bottomDivider>
                     <ListItem.Content>
                         <ListItem.Title>{patient.phoneNumber}</ListItem.Title>
+                        <ListItem.Subtitle>{patient.statusUpdateDate} {patient.statusUpdateTime}</ListItem.Subtitle>
                     </ListItem.Content>
                     <Button
                         icon={

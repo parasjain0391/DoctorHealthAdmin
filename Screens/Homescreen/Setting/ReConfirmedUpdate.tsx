@@ -90,6 +90,25 @@ export default class StatusUpdate extends React.Component<Props, States> {
         datePerformanceRef
         .once('value')
         .then((snapshot)=>{
+            if (!snapshot.exists()){
+                var freshPerformance = { 'Order Confirmed':0,
+                                    'Interested':0,
+                                    'Not Answered':0,
+                                    'Not Answered 2':0,
+                                    'Price Issue':0,
+                                    'Report Awaited':0,
+                                    'Not Interested':0,
+                                    'Assigned':0,
+                                    'Time Spent':0,
+                                    'Calls Made':0,
+                                    'Finally Confirmed':0,
+                                    'Order Declined':0,
+                                    'Assigned Rejected':0};
+                database()
+                .ref('/doctorPerformance/' + String(patient.doctoruid) + '/' + String(patient.statusUpdateDate))
+                .set(freshPerformance)
+                .catch((err)=>{console.log(String(err));});
+            }
             let count = snapshot.child(String(this.newStatus)).val() + 1;
             datePerformanceRef
             .child(String(this.newStatus))

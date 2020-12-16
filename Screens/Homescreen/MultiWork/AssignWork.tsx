@@ -159,6 +159,7 @@ export default class AssignWork extends React.Component<Props,States> {
             'phoneNumber': call.phoneNumber,
             'doctoruid': this.selectedDoctor.uid,
             'statusUpdateDate':moment().format('YYYY-MM-DD'),
+            'statusUpdateTime':moment().format('LT'),
             'status':'Pending',
             'timeSpent':0,
             'callsMade':0,
@@ -225,7 +226,8 @@ export default class AssignWork extends React.Component<Props,States> {
                                     'Time Spent':0,
                                     'Calls Made':0,
                                     'Finally Confirmed':0,
-                                    'Order Declined':0};
+                                    'Order Declined':0,
+                                    'Assigned Rejected':0};
                 console.log(freshPerformance);
                 database()
                 .ref('/doctorPerformance/' + String(uid) + '/' + String(moment().format('YYYY-MM-DD')))

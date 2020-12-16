@@ -22,7 +22,8 @@ interface States {
         'Time Spent':number,
         'Calls Made':number,
         'Finally Confirmed':number,
-        'Order Declined':number
+        'Order Declined':number,
+        'Assigned Rejected':number,
     },
     Pending:number,
 }
@@ -48,6 +49,7 @@ export default class ListDoctor extends React.Component<Props,States> {
                 'Time Spent':0,
                 'Finally Confirmed':0,
                 'Order Declined':0,
+                'Assigned Rejected':0,
             },
             Pending:0,
         };
@@ -152,6 +154,12 @@ export default class ListDoctor extends React.Component<Props,States> {
                 <ListItem
                     bottomDivider>
                     <ListItem.Content>
+                        <ListItem.Title>Assigned Rejected: {this.state.dataRecieved['Assigned Rejected']}</ListItem.Title>
+                    </ListItem.Content>
+                </ListItem>
+                <ListItem
+                    bottomDivider>
+                    <ListItem.Content>
                         <ListItem.Title>Calls Made: {this.state.dataRecieved['Calls Made']}</ListItem.Title>
                     </ListItem.Content>
                 </ListItem>
@@ -243,6 +251,7 @@ export default class ListDoctor extends React.Component<Props,States> {
             'Time Spent':0,
             'Finally Confirmed':0,
             'Order Declined':0,
+            'Assigned Rejected':0,
         };
         for (let j = 0; j < i; j++) {
             ref
