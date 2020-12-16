@@ -9,15 +9,20 @@ import database from '@react-native-firebase/database';
 interface Props extends NavigationParams{}
 interface States {
     calls:any,
+    isChecked:boolean,
+    count:number,
 }
 export default class ListWork extends React.Component<Props,States> {
-    _isMounted:boolean;uid:string;
+    _isMounted:boolean;
+    uid:string;
     constructor(props: Props) {
       super(props);
       this._isMounted = false;
       this.uid = 'null';
       this.state = {
         calls: [],
+        isChecked: false,
+        count: 0,
       };
     }
     // called when the screen is loaded
@@ -28,12 +33,14 @@ export default class ListWork extends React.Component<Props,States> {
         .once('value')
         .then((snapshot) => {
             const calls:any = [];
+            var c:number = 0;
             snapshot.forEach((item:any)=>{
                 var i = item.val();
                 i.isChecked = false;
                 calls.push(i);
+                c++;
             });
-            this.setState({ calls: calls });
+            this.setState({ calls: calls, count:c });
           })
         .catch(err => {console.log(String(err));});
     }
@@ -53,6 +60,17 @@ export default class ListWork extends React.Component<Props,States> {
           Alert.alert('Please Select at least one patient to be assigned');
         }
     }
+    assignTenWork(){
+        var c:any = [];
+        var callCount:number = 0;
+        this.state.calls.forEach((item:any)=>{
+            if (callCount < 10){
+              c.push(item);
+              callCount++;
+            }
+        });
+        this.props.navigation.navigate('AssignWork',{calls:c});
+    }
       // UI element of the call Logs
       renderCalls() {
         return this.state.calls.map((call:any) => {
@@ -69,7 +87,9 @@ export default class ListWork extends React.Component<Props,States> {
         return (
           <View style={styles.body}>
             <ScrollView>
-              <View style={{flex:1, backgroundColor:'white'}}>{this.renderCalls()}</View>
+              <View style={{flex:1, backgroundColor:'white'}}>
+                {this.renderCalls()}
+              </View>
             </ScrollView>
             <View style={styles.buttonarea}>
                 <Button
@@ -84,6 +104,14 @@ export default class ListWork extends React.Component<Props,States> {
                     onPress={()=>{this.assignMultipleWork();}}
                     title="Assign"
                     type="solid"
+                    buttonStyle={styles.button}
+                />
+                <Button
+                    // assign first 10 work in the list
+                    onPress={()=>{this.assignTenWork();}}
+                    title="Assign 10"
+                    type="solid"
+                    disabled={this.state.count < 10}
                     buttonStyle={styles.button}
                 />
             </View>

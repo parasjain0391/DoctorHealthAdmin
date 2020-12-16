@@ -53,7 +53,7 @@ export default class ListWork extends React.Component<Props,States> {
               },
             );
             if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-              CallLogs.load(100).then((calls: any) => this._isMounted && this.setState({calls}));
+              CallLogs.loadAll().then((calls: any) => this._isMounted && this.setState({calls}));
               this.getuid().then(u=> {this.uid = u;}).catch(()=>{console.log('Error in getting the uid from async storage');});
             } else {
               Alert.alert('Call Log permission denied');
@@ -73,9 +73,9 @@ export default class ListWork extends React.Component<Props,States> {
         this._isMounted && this.getCallLogs();
       }
       // update the calllog in realtime
-      componentDidUpdate() {
-        CallLogs.load(100).then((calls: any) => this._isMounted && this.setState({calls}));
-      }
+      // componentDidUpdate() {
+      //   CallLogs.load(500).then((calls: any) => this._isMounted && this.setState({calls}));
+      // }
       componentWillUnmount() {
         this._isMounted = false;
       }
@@ -91,6 +91,38 @@ export default class ListWork extends React.Component<Props,States> {
             Alert.alert(String(call.phoneNumber) + ' is already assigned or added');
           }
           else {
+            database()
+            .ref('/allPatients/' + String(call.phoneNumber))
+            .set(call.phoneNumber)
+            .catch(err=>{console.log(String(err));});
+            database()
+            .ref('/work/unassignedWork/' + String(call.phoneNumber))
+            .set(call)
+            .catch(err=>{console.log(String(err));});
+          }
+        });
+      }
+      addAllNumber(){
+        var uniqueCalls = {};
+        CallLogs.loadAll().then((calls: any) => {
+          this._isMounted && this.setState({calls:calls});
+          calls.forEach((call:any)=>{
+            var num = String(call.phoneNumber);
+            if (!uniqueCalls.hasOwnProperty(num)){
+              uniqueCalls[num] = JSON.stringify(call);
+              this.addNumber(call);
+            }
+          });
+        });
+      }
+      addNumber(call:any){
+        call.phoneNumber = call.phoneNumber % 10000000000;
+        database()
+        .ref('/allPatients/' + String(call.phoneNumber))
+        .once('value')
+        .then((snapshot) => {
+          if (!snapshot.exists())
+          {
             database()
             .ref('/allPatients/' + String(call.phoneNumber))
             .set(call.phoneNumber)
@@ -134,7 +166,7 @@ export default class ListWork extends React.Component<Props,States> {
               bottomDivider>
               <ListItem.Content>
               <ListItem.Title>{String(call.phoneNumber % 10000000000)}</ListItem.Title>
-              <ListItem.Subtitle>{call.dateTime.slice(0,11)}</ListItem.Subtitle>
+              <ListItem.Subtitle>{call.dateTime/*.slice(0,11)*/}</ListItem.Subtitle>
               </ListItem.Content>
                 {this.getCallIcon(call.type)}
                 <Button
@@ -159,6 +191,12 @@ export default class ListWork extends React.Component<Props,States> {
                 {this.renderCalls()}
               </View>
             </ScrollView>
+            <FAB
+                style={styles.fab3}
+                label="Add all"
+                icon="clipboard-text"
+                onPress={() => {this.addAllNumber();}}
+            />
             <FAB
                 style={styles.fab2}
                 label="Assign"
@@ -186,6 +224,12 @@ const styles = StyleSheet.create({
       position:'absolute',
       bottom:13,
       right:80,
+    },
+    fab3: {
+      alignSelf:'flex-end',
+      position:'absolute',
+      bottom:13,
+      right:220,
     },
     container: {
         flex: 1,
