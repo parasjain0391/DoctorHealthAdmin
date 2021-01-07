@@ -3,7 +3,6 @@ import React from 'react';
 import { NavigationParams } from 'react-navigation';
 import {createStackNavigator} from '@react-navigation/stack';
 import ListDoctor from './Doctor/ListDoctor';
-import AddDoctor from './Doctor/AddDoctor';
 import DoctorPerformance from './Doctor/DoctorPerformance';
 // it is a stack navigator that deals with the doctor management
 const Stack = createStackNavigator();
@@ -17,11 +16,6 @@ export default class Work extends React.Component<Props,States> {
                     name="ListDoctor"
                     component={ListDoctor}
                     options={{title: 'List Doctor'}}
-                />
-                <Stack.Screen
-                    name="AddDoctor"
-                    component={AddDoctor}
-                    options={{title: 'Add Doctor'}}
                 />
                 <Stack.Screen
                     name="DoctorPerformance"

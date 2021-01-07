@@ -17,6 +17,14 @@ import {NavigationContainer} from '@react-navigation/native';
 import Login from './Screens/Login';
 import Homescreen from './Screens/Homescreen';
 import { NavigationParams } from 'react-navigation';
+import ReConfirmedUpdate from './Screens/Homescreen/Setting/ReConfirmedUpdate';
+import ReConfirmedList from './Screens/Homescreen/Setting/ReConfirmedList';
+import SelectImportList from './Screens/Homescreen/Setting/SelectImportList';
+import AddDoctor from './Screens/Homescreen/Doctor/AddDoctor';
+import AddWork from './Screens/Homescreen/MultiWork/AddWork';
+import AssignWork from './Screens/Homescreen/MultiWork/AssignWork';
+import ListPatients from './Screens/Homescreen/MultiWork/ListPatients';
+
 const Stack = createStackNavigator();
 interface Props extends NavigationParams {}
 interface States {}
@@ -35,6 +43,41 @@ export default class App extends React.Component<Props, States> {
             name="Homescreen"
             component={Homescreen}
             options={{title: 'Doctor Health'}}
+          />
+          <Stack.Screen
+              name="ReConfirmed List"
+              component={ReConfirmedList}
+              options={{title: 'List of confirmed order patient'}}
+          />
+          <Stack.Screen
+              name="ReConfirmed Update"
+              component={ReConfirmedUpdate}
+              options={{title: 'Status Update'}}
+          />
+          <Stack.Screen
+              name="SelectImportList"
+              component={SelectImportList}
+              options={{title: 'Select the list to import the numbers'}}
+          />
+          <Stack.Screen
+              name="AddDoctor"
+              component={AddDoctor}
+              options={{title: 'Add Doctor'}}
+          />
+          <Stack.Screen
+              name="AddWork"
+              component={AddWork}
+              options={{title: 'Add New Patient'}}
+          />
+          <Stack.Screen
+              name="AssignWork"
+              component={AssignWork}
+              options={{title: 'Assign Work'}}
+          />
+          <Stack.Screen
+              name="ListPatients"
+              component={ListPatients}
+              options={{title: 'Selected List of Patients'}}
           />
         </Stack.Navigator>
       </NavigationContainer>

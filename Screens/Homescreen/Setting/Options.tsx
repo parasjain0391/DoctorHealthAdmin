@@ -9,6 +9,7 @@ interface Props extends NavigationParams {}
 interface States {}
 
 export default class Options extends React.Component<Props,States> {
+    call:any;
     constructor(props:Props) {
         super(props);
     }
@@ -37,6 +38,12 @@ export default class Options extends React.Component<Props,States> {
                 label="Reconfirm Order"
                 icon="clipboard-text"
                 onPress={() => {this.props.navigation.navigate('ReConfirmed List');}}
+                />
+                <FAB
+                style={styles.fab}
+                label="Import numbers from CSV file"
+                icon="clipboard-text"
+                onPress={()=>{this.props.navigation.navigate('SelectImportList');}}
                 />
                 <FAB
                 style={styles.fab}

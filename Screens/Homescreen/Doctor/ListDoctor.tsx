@@ -1,10 +1,10 @@
 /* eslint-disable prettier/prettier */
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, ScrollView, SafeAreaView } from 'react-native';
 import { FAB } from 'react-native-paper';
 import { NavigationParams } from 'react-navigation';
 import {ListItem } from 'react-native-elements';
-import { ScrollView } from 'react-native-gesture-handler';
+//import {  } from 'react-native-gesture-handler';
 import database from '@react-native-firebase/database';
 interface Props extends NavigationParams{}
 interface States {
@@ -26,11 +26,8 @@ export default class ListDoctor extends React.Component<Props,States> {
     componentDidMount() {
         this._isMounted = true;
         this.ref
-        .once('value')
-        .then((snapshot:any) => {this.loadDoctor(snapshot);})
+        .on('value',(snapshot:any)=>{this.loadDoctor(snapshot);})
         .catch((err:any)=> {console.log(String(err));});
-        this.ref
-        .on('value',(snapshot:any)=>{this.loadDoctor(snapshot);});
     }
     componentWillUnmount() {
         this._isMounted = false;
@@ -67,7 +64,7 @@ export default class ListDoctor extends React.Component<Props,States> {
     }
     render() {
         return (
-            <View style={styles.body}>
+            <SafeAreaView style={styles.body}>
                 <ScrollView>
                     {this.renderDoctor()}
                 </ScrollView>
@@ -75,14 +72,13 @@ export default class ListDoctor extends React.Component<Props,States> {
                     style={styles.fab}
                     icon="plus"
                     onPress={() => {console.log('Add button pressed'); this.props.navigation.navigate('AddDoctor');}}
-                    />
-            </View>
+                />
+            </SafeAreaView>
         );
     }
 }
 const styles = StyleSheet.create({
     fab: {
-        alignSelf:'flex-end',
         position:'absolute',
         bottom:10,
         right:10,
@@ -94,7 +90,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'white',
         padding: 10,
-        justifyContent:'flex-end',
     },
     itleText: {
         fontSize: 22,

@@ -56,6 +56,7 @@ export default class AssignWork extends React.Component<Props,States> {
     selectedDoctor:any;
     _isMounted:any;
     ref:any;
+    listName:string;
     constructor(props:Props) {
         super(props);
         this.state = {
@@ -63,6 +64,7 @@ export default class AssignWork extends React.Component<Props,States> {
                 {'uid':'1','name':'Paras1'},
             ],
         };
+        this.listName = '';
         this.ref = database().ref('/user');
         this._isMounted = false;
         this.selectedDoctor = {'firstName':'Not','lastName':'Selected','uid':''};
@@ -74,6 +76,8 @@ export default class AssignWork extends React.Component<Props,States> {
         .once('value')
         .then((snapshot:any)=>{this.loadDoctor(snapshot);})
         .catch((err:any)=>{console.log(String(err));});
+        const {listName} = this.props.route.params;
+        this.listName = listName;
         this.ref
         .on('value',(snapshot:any)=>{this.loadDoctor(snapshot);});
     }
@@ -160,22 +164,24 @@ export default class AssignWork extends React.Component<Props,States> {
             'doctoruid': this.selectedDoctor.uid,
             'statusUpdateDate':moment().format('YYYY-MM-DD'),
             'statusUpdateTime':moment().format('LT'),
+            'listName':this.listName,
             'status':'Pending',
             'timeSpent':0,
             'callsMade':0,
             'assignedTo': this.selectedDoctor.firstName + ' ' + this.selectedDoctor.lastName,
             'timestamp': moment().unix(),            
         };
-        console.log(assign);
         database()
         .ref('/work/Pending/' + String(assign.doctoruid))
         .child(String(assign.phoneNumber))
         .set(assign)
+        .then(()=>{console.log(String(assign.phoneNumber) + 'is assigned to ' + String(this.selectedDoctor.uid));})
         .catch((err)=>{console.log('/work/Pending/' + String(err));});
         database()
-        .ref('/work/unassignedWork/' + String(assign.phoneNumber))
+        .ref('/work/' + String(this.listName) + '/' + String(assign.phoneNumber))
         .set(null)
-        .catch((err)=>{console.log('/work/unassignedWork/' + String(err));});
+        .then(()=>{console.log(String(assign.phoneNumber) + 'is remove from ' + String(this.listName) + ' List');})
+        .catch((err)=>{console.log('/work/' + String(this.listName) + '/ ' + String(err));});
     }
     updatePerformance(uid:any,i:number){
         database()
@@ -184,11 +190,13 @@ export default class AssignWork extends React.Component<Props,States> {
         .once('value')
         .then((snapshot)=>{
             if (snapshot.exists()){
+                console.log('Doctor Performance of today is present');
                 database()
                 .ref('/doctorPerformance/' + String(uid))
                 .update({
                     Pending:snapshot.val() + i,
                 })
+                .then(()=>{console.log(i + 'is added to pending of doctor ' + String(this.selectedDoctor.uid));})
                 .catch((err)=>{console.log('/doctorPerformance/' + String(err));});
             } else {
                 database()
@@ -196,6 +204,7 @@ export default class AssignWork extends React.Component<Props,States> {
                 .update({
                     Pending:i,
                 })
+                .then(()=>{console.log('New Pending is initialized as ' + i + ' of doctor ' + String(this.selectedDoctor.uid));})
                 .catch((err)=>{console.log('/doctorPerformance/' + String(err));});
             }
         })
@@ -213,6 +222,7 @@ export default class AssignWork extends React.Component<Props,States> {
                 .update({
                     Assigned:snapshot.val().Assigned + i,
                 })
+                .then(()=>{console.log(i + 'is added to Assigned of ' + String(moment().format('YYYY-MM-DD')) + ' of doctor ' + String(this.selectedDoctor.uid));})
                 .catch((err)=>{console.log(String(err));});
             } else {
                 var freshPerformance = { 'Order Confirmed':0,
@@ -232,6 +242,7 @@ export default class AssignWork extends React.Component<Props,States> {
                 database()
                 .ref('/doctorPerformance/' + String(uid) + '/' + String(moment().format('YYYY-MM-DD')))
                 .set(freshPerformance)
+                .then(()=>{console.log('New Performance of ' + String(moment().format('YYYY-MM-DD')) + ' of doctor ' + String(this.selectedDoctor.uid) + ' is set with Assigned as ' + i);})
                 .catch((err)=>{console.log(String(err));});
             }
         })

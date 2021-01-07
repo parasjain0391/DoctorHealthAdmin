@@ -10,6 +10,8 @@ import CallLogs from 'react-native-call-log';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {FAB} from 'react-native-paper';
 import database from '@react-native-firebase/database';
+// @ts-ignore
+import RNImmediatePhoneCall from 'react-native-immediate-phone-call';
 interface Props extends NavigationParams{}
 interface States {
     calls: {
@@ -21,9 +23,11 @@ interface States {
         timestamp: string;
         type: string;
       }[];
+      isVisible:boolean;
 }
 export default class ListWork extends React.Component<Props,States> {
-    _isMounted:boolean;uid:string;
+    _isMounted:boolean;
+    uid:string;
     // get the uid saved in the mobile
     async getuid() {
         const uid:any = await AsyncStorage.getItem('uid');
@@ -35,6 +39,7 @@ export default class ListWork extends React.Component<Props,States> {
       this.uid = 'null';
       this.state = {
         calls: [],
+        isVisible: false,
       };
     }
     // get the callog from the phone so that they can be assigned later
@@ -53,7 +58,7 @@ export default class ListWork extends React.Component<Props,States> {
               },
             );
             if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-              CallLogs.loadAll().then((calls: any) => this._isMounted && this.setState({calls}));
+              CallLogs.load(500).then((calls: any) => this._isMounted && this.setState({calls}));
               this.getuid().then(u=> {this.uid = u;}).catch(()=>{console.log('Error in getting the uid from async storage');});
             } else {
               Alert.alert('Call Log permission denied');
@@ -93,18 +98,37 @@ export default class ListWork extends React.Component<Props,States> {
           else {
             database()
             .ref('/allPatients/' + String(call.phoneNumber))
-            .set(call.phoneNumber)
+            .set(String(call.phoneNumber))
+            .then(()=>{console.log(String(call.phoneNumber) + 'is added to allPatient');})
             .catch(err=>{console.log(String(err));});
             database()
-            .ref('/work/unassignedWork/' + String(call.phoneNumber))
+            .ref('/work/Unassigned/' + String(call.phoneNumber))
             .set(call)
+            .then(()=>{console.log(String(call.phoneNumber) + 'is added to Unassigned List');})
             .catch(err=>{console.log(String(err));});
           }
         });
       }
+      confirmAddAll(){
+        console.log('Add All Number Pressed');
+        Alert.alert(
+          'Add All Calls',
+          'Are you sure that you want to add all the number in the call log?',
+          [
+            {
+              text: 'Cancel',
+              onPress: () => console.log('Cancel Add All numbers'),
+              style: 'cancel',
+            },
+            { text: 'OK', onPress: () => {this.addAllNumber();} },
+          ],
+          { cancelable: true }
+        );
+      }
       addAllNumber(){
+        console.log('Add All number confirmed');
         var uniqueCalls = {};
-        CallLogs.loadAll().then((calls: any) => {
+        CallLogs.load(1000).then((calls: any) => {
           this._isMounted && this.setState({calls:calls});
           calls.forEach((call:any)=>{
             var num = String(call.phoneNumber);
@@ -125,14 +149,31 @@ export default class ListWork extends React.Component<Props,States> {
           {
             database()
             .ref('/allPatients/' + String(call.phoneNumber))
-            .set(call.phoneNumber)
+            .set(String(call.phoneNumber))
+            .then(()=>{console.log(String(call.phoneNumber) + 'is added to allPatient');})
             .catch(err=>{console.log(String(err));});
             database()
-            .ref('/work/unassignedWork/' + String(call.phoneNumber))
+            .ref('/work/Unassigned/' + String(call.phoneNumber))
             .set(call)
+            .then(()=>{console.log(String(call.phoneNumber) + ' is added to Unassigned List');})
             .catch(err=>{console.log(String(err));});
           }
         });
+      }
+      addOne(call:any) {
+        call.phoneNumber = call.phoneNumber % 10000000000;
+        database()
+        .ref('/allPatients/' + String(call.phoneNumber))
+        .once('value')
+        .then((snapshot) => {
+            if (snapshot.exists())
+            {
+                Alert.alert(String(call.phoneNumber) + ' is already assigned or added');
+            }
+            else {
+              this.props.navigation.navigate('SelectListOne',{call});
+            }
+          });
       }
       // get the correct call icon
       getCallIcon(type:string) {
@@ -162,7 +203,7 @@ export default class ListWork extends React.Component<Props,States> {
       // UI element of the call Logs
       renderCalls() {
         return this.state.calls.map(call => {
-          return <ListItem key={call.timestamp}
+          return <ListItem key={String(call.phoneNumber) + String(call.timestamp)}
               bottomDivider>
               <ListItem.Content>
               <ListItem.Title>{String(call.phoneNumber % 10000000000)}</ListItem.Title>
@@ -178,8 +219,18 @@ export default class ListWork extends React.Component<Props,States> {
                     />}
                     buttonStyle={styles.button}
                     type="clear"
-                    onPress={()=> {this.addPatient(call);}}
+                    onPress={()=> {this.addOne(call);}}
                 />
+                <Button
+                        icon={
+                            <Icon
+                            name="call"
+                            size={22}
+                        />}
+                        type="clear"
+                        // Make direct call to the number
+                        onPress={() => {RNImmediatePhoneCall.immediatePhoneCall(call.phoneNumber);}}
+                    />
             </ListItem>;
         });
       }
@@ -195,13 +246,13 @@ export default class ListWork extends React.Component<Props,States> {
                 style={styles.fab3}
                 label="Add all"
                 icon="clipboard-text"
-                onPress={() => {this.addAllNumber();}}
+                onPress={() => {this.confirmAddAll();}}
             />
             <FAB
                 style={styles.fab2}
                 label="Assign"
                 icon="clipboard-text"
-                onPress={() => {this.props.navigation.navigate('ListPatients');}}
+                onPress={() => {this.props.navigation.navigate('SelectList');/*this.props.navigation.navigate('ListPatients');*/}}
             />
             <FAB
                 style={styles.fab}

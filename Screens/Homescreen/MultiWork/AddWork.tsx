@@ -7,6 +7,8 @@ import { Input, Button} from 'react-native-elements';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import database from '@react-native-firebase/database';
 import moment from 'moment';
+// @ts-ignore
+import RadioButtonRN from 'radio-buttons-react-native';
 // add new patient that is not in the calllog
 // not working at the moment
 interface Props extends NavigationParams{}
@@ -15,6 +17,7 @@ interface States {
 }
 export default class AddWork extends React.Component<Props,States> {
     call:any
+    workCategory:any
     constructor(props:Props){
         super(props);
         this.call = {
@@ -29,11 +32,14 @@ export default class AddWork extends React.Component<Props,States> {
         this.state = {
             phoneNumber:'',
         };
+        this.workCategory = '';
     }
     addPatient() {
         if (String(this.state.phoneNumber).length < 10)
         {
             Alert.alert('The Phone Number must be 10 digit number');
+        } else if (this.workCategory === '') {
+            Alert.alert('Please select a work category');
         } else {
             this.call.phoneNumber = this.state.phoneNumber;
             database()
@@ -48,25 +54,51 @@ export default class AddWork extends React.Component<Props,States> {
                 database()
                 .ref('/allPatients/' + String(this.call.phoneNumber))
                 .set(this.call.phoneNumber)
+                .then(()=>{console.log(String(this.call.phoneNumber) + 'is added to allPatient');})
                 .catch(err=>{console.log(String(err));});
                 database()
-                .ref('/work/unassignedWork/' + String(this.call.phoneNumber))
+                .ref('/work/' + String(this.workCategory) + '/' + String(this.call.phoneNumber))
                 .set(this.call)
+                .then(()=>{console.log(String(this.call.phoneNumber) + 'is added to ' + String(this.workCategory) + ' List');})
                 .catch(err=>{console.log(String(err));});
                 this.props.navigation.navigate('ListWork');
             }
             });
         }
-      }
+    }
     render() {
+        const data = [
+            {
+                label:'Unassigned',
+            },
+            {
+                label:'Photos not done',
+            },
+            {
+                label:'Photos done',
+            },
+            {
+                label:'Facebook leads',
+            },
+      ];
         return (
             <View style={styles.body}>
             <View style={styles.radioButtonArea}>
                 <Input
-                        containerStyle= {{ marginVertical: 10}}
+                        containerStyle= {{ marginVertical: 20}}
                         placeholder="Phone Number"
                         value={this.state.phoneNumber}
                         onChangeText={(text) => this.setState({ phoneNumber : text })} />
+            </View>
+            <View>
+                <RadioButtonRN
+                data={data}
+                selectedBtn={(value:any) => {this.workCategory = value.label;}}
+                animationTypes={['zoomIn']}
+                duration={5}
+                textStyle={styles.radioText}
+                boxStyle={styles.radioText}
+                />
             </View>
             <View style={styles.buttonarea}>
             <Button
@@ -111,7 +143,6 @@ const styles = StyleSheet.create({
     radioText: {
         fontSize:18,
         fontWeight: '600',
-        marginVertical:10,
     },
     radioBox: {
         marginHorizontal:20,

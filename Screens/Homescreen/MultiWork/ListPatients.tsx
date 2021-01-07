@@ -11,28 +11,50 @@ interface States {
     calls:any,
     isChecked:boolean,
     count:number,
+    checkedCount:number,
 }
 export default class ListWork extends React.Component<Props,States> {
     _isMounted:boolean;
     uid:string;
+    listName:string;
+    updateAlert:boolean;
     constructor(props: Props) {
       super(props);
       this._isMounted = false;
       this.uid = 'null';
+      this.listName = '';
+      this.updateAlert = false;
       this.state = {
         calls: [],
         isChecked: false,
         count: 0,
+        checkedCount:0,
       };
     }
     // called when the screen is loaded
     componentDidMount() {
         this._isMounted = true;
+        const {listName} = this.props.route.params;
+        this.listName = listName;
         database()
-        .ref('/work/unassignedWork/')
-        .once('value')
-        .then((snapshot) => {
-            const calls:any = [];
+        .ref('/work/' + String(this.listName))
+        .on('value', (snapshot:any) => {
+          this.loadPatient(snapshot);
+          this.updateAlert = false;
+        });
+    }
+    componentWillUnmount(){
+      this._isMounted = false;
+      this.updateAlert = false;
+    }
+    loadPatient(snapshot:any){
+      if (this.updateAlert){
+        Alert.alert('This Patient list is updated');
+      }
+      if (!snapshot.exists()) {
+        Alert.alert(String(this.listName) + ' list is empty');
+      }
+      const calls:any = [];
             var c:number = 0;
             snapshot.forEach((item:any)=>{
                 var i = item.val();
@@ -41,8 +63,6 @@ export default class ListWork extends React.Component<Props,States> {
                 c++;
             });
             this.setState({ calls: calls, count:c });
-          })
-        .catch(err => {console.log(String(err));});
     }
     //Assign the checkboxed patients
     assignMultipleWork() {
@@ -55,30 +75,32 @@ export default class ListWork extends React.Component<Props,States> {
             }
         });
         if (flag){
-          this.props.navigation.navigate('AssignWork',{calls:c});
+          this.props.navigation.navigate('AssignWork',{calls:c,listName:this.listName});
         } else {
           Alert.alert('Please Select at least one patient to be assigned');
         }
     }
-    assignTenWork(){
-        var c:any = [];
+    selectTen(){
         var callCount:number = 0;
-        this.state.calls.forEach((item:any)=>{
-            if (callCount < 10){
-              c.push(item);
+        this.state.calls.forEach((call:any)=>{
+            if (call.isChecked === false && callCount < 10){
+              call.isChecked = !call.isChecked;
               callCount++;
             }
         });
-        this.props.navigation.navigate('AssignWork',{calls:c});
+        this.setState({checkedCount:this.state.checkedCount + callCount});
+        this.forceUpdate();
     }
       // UI element of the call Logs
       renderCalls() {
         return this.state.calls.map((call:any) => {
-          return <View key={call.timestamp}>
+          return <View key={call.phoneNumber}>
             <CheckBox
             title={String(call.phoneNumber)}
             checked={call.isChecked}
-            onPress={() => {call.isChecked = !call.isChecked; this.forceUpdate();}}
+            onPress={() => {call.isChecked = !call.isChecked;
+              this.setState({checkedCount:this.state.checkedCount + 1});
+              this.forceUpdate();}}
             />
             </View>;
         });
@@ -102,16 +124,16 @@ export default class ListWork extends React.Component<Props,States> {
                 <Button
                     // assign the work
                     onPress={()=>{this.assignMultipleWork();}}
-                    title="Assign"
+                    title={'Assign(' + this.state.checkedCount + '/' + this.state.count + ')'}
                     type="solid"
                     buttonStyle={styles.button}
                 />
                 <Button
                     // assign first 10 work in the list
-                    onPress={()=>{this.assignTenWork();}}
-                    title="Assign 10"
+                    onPress={()=>{this.selectTen();}}
+                    title="Select 10"
                     type="solid"
-                    disabled={this.state.count < 10}
+                    disabled={this.state.count - this.state.checkedCount < 10}
                     buttonStyle={styles.button}
                 />
             </View>
