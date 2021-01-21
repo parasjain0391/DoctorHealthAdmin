@@ -21,13 +21,15 @@ export default class SelectList extends React.Component<Props,States> {
         };
         this._isMounted = false;
     }
-    // called when the screen is loaded and gets the doctors information form the database
+    // called when the screen is loaded
     componentDidMount() {
         this._isMounted = true;
     }
+    // called when the screen is unmounted
     componentWillUnmount() {
         this._isMounted = false;
     }
+    //show the name of the list for which the number can be added
     renderList() {
         return this.state.item.map(item => {
           return <ListItem key={item.name}

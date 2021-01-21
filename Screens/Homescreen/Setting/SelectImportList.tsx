@@ -25,25 +25,29 @@ export default class SelectImportList extends React.Component<Props,States> {
         };
         this._isMounted = false;
     }
-    // called when the screen is loaded and gets the doctors information form the database
+    // called when the screen is loaded
     componentDidMount() {
         this._isMounted = true;
     }
+    // called when the screen is unmounted
     componentWillUnmount() {
         this._isMounted = false;
     }
+    // Add the number to the selected list
     addNumber(call:any, listName:String){
+        // check the number if already added in the current date
         database()
-        .ref('/allPatients/' + String(call.phoneNumber))
+        .ref('/allPatients/' + moment().format('YYYY-MM-DD') + '/' + String(call.phoneNumber))
         .once('value')
         .then((snapshot) => {
           if (!snapshot.exists())
           {
             database()
-            .ref('/allPatients/' + String(call.phoneNumber))
+            .ref('/allPatients/' + moment().format('YYYY-MM-DD') + '/' + String(call.phoneNumber))
             .set(String(call.phoneNumber))
             .then(()=>{console.log(String(call.phoneNumber) + 'is added to allPatient');})
             .catch(err=>{console.log(String(err));});
+            // Add the number to the list
             database()
             .ref('/work/' + listName + '/' + String(call.phoneNumber))
             .set(call)
@@ -52,10 +56,12 @@ export default class SelectImportList extends React.Component<Props,States> {
           }
         });
     }
+    //Load all the numbers from the csv in an array
     loadAllNumbers(data:any, listName:String){
         if (!data[0].hasOwnProperty('phone_number')){
             Alert.alert('The given csv file does not have column name phone_number');
         } else {
+            // check if the value in the cell is a 10 digit number
             var reg = new RegExp('[0-9]{10}');
             data.forEach((row:any)=>{
                 if (reg.test(row.phone_number.slice(row.phone_number.length - 10))) {
@@ -73,6 +79,7 @@ export default class SelectImportList extends React.Component<Props,States> {
             });
         }
     }
+    // convert the csv file content to a json object
     csvJSON(csv:any){
         var lines = csv.split('\r\n');
         //console.log(lines);
@@ -93,6 +100,7 @@ export default class SelectImportList extends React.Component<Props,States> {
         return result; //JavaScript object
         //return JSON.stringify(result); //JSON
     }
+    // the method to pick a csv file and then call subsequent function
     async filePicker(listName:String) {
         console.log('import fb leads pressed');
         try {
@@ -137,6 +145,7 @@ export default class SelectImportList extends React.Component<Props,States> {
             }
           }
     }
+    // render the list in which the numbers from the csv can be added
     renderList() {
         return this.state.item.map(item => {
           return <ListItem key={item.name}

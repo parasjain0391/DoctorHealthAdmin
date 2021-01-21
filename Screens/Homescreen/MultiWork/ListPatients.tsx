@@ -36,6 +36,7 @@ export default class ListWork extends React.Component<Props,States> {
         this._isMounted = true;
         const {listName} = this.props.route.params;
         this.listName = listName;
+        // A Event Listener is added at the database for any changes in the node
         database()
         .ref('/work/' + String(this.listName))
         .on('value', (snapshot:any) => {
@@ -43,14 +44,13 @@ export default class ListWork extends React.Component<Props,States> {
           this.updateAlert = false;
         });
     }
+    // called when the sceen is unmounted
     componentWillUnmount(){
       this._isMounted = false;
       this.updateAlert = false;
     }
+    // Load the patient that are fetched from the database to the this.state.calls which automatically calls render
     loadPatient(snapshot:any){
-      if (this.updateAlert){
-        Alert.alert('This Patient list is updated');
-      }
       if (!snapshot.exists()) {
         Alert.alert(String(this.listName) + ' list is empty');
       }
@@ -64,7 +64,8 @@ export default class ListWork extends React.Component<Props,States> {
             });
             this.setState({ calls: calls, count:c });
     }
-    //Assign the checkboxed patients
+    //Assign the checkboxed patients by pushin the selected patient to AssignWork Screen
+    // called by pressing on the Assign button
     assignMultipleWork() {
         var c:any = [];
         var flag = false;
@@ -80,6 +81,8 @@ export default class ListWork extends React.Component<Props,States> {
           Alert.alert('Please Select at least one patient to be assigned');
         }
     }
+    // check the 10 unchecked calls in the upper reach of the list
+    // called by pressing select 10 button 
     selectTen(){
         var callCount:number = 0;
         this.state.calls.forEach((call:any)=>{
@@ -91,55 +94,55 @@ export default class ListWork extends React.Component<Props,States> {
         this.setState({checkedCount:this.state.checkedCount + callCount});
         this.forceUpdate();
     }
-      // UI element of the call Logs
-      renderCalls() {
-        return this.state.calls.map((call:any) => {
-          return <View key={call.phoneNumber}>
-            <CheckBox
-            title={String(call.phoneNumber)}
-            checked={call.isChecked}
-            onPress={() => {call.isChecked = !call.isChecked;
-              this.setState({checkedCount:this.state.checkedCount + 1});
-              this.forceUpdate();}}
-            />
-            </View>;
-        });
-      }
-      render() {
-        return (
-          <View style={styles.body}>
-            <ScrollView>
-              <View style={{flex:1, backgroundColor:'white'}}>
-                {this.renderCalls()}
-              </View>
-            </ScrollView>
-            <View style={styles.buttonarea}>
-                <Button
-                    // cancel the work assignment and go back
-                    onPress={()=>{this.props.navigation.navigate('ListWork');}}
-                    title="Cancel"
-                    type="solid"
-                    buttonStyle={styles.button}
-                />
-                <Button
-                    // assign the work
-                    onPress={()=>{this.assignMultipleWork();}}
-                    title={'Assign(' + this.state.checkedCount + '/' + this.state.count + ')'}
-                    type="solid"
-                    buttonStyle={styles.button}
-                />
-                <Button
-                    // assign first 10 work in the list
-                    onPress={()=>{this.selectTen();}}
-                    title="Select 10"
-                    type="solid"
-                    disabled={this.state.count - this.state.checkedCount < 10}
-                    buttonStyle={styles.button}
-                />
-            </View>
-          </View>
-        );
+    // UI element of the call Logs
+    renderCalls() {
+      return this.state.calls.map((call:any) => {
+        return <View key={call.phoneNumber}>
+          <CheckBox
+          title={String(call.phoneNumber)}
+          checked={call.isChecked}
+          onPress={() => {call.isChecked = !call.isChecked;
+            this.setState({checkedCount:this.state.checkedCount + 1});
+            this.forceUpdate();}}
+          />
+          </View>;
+      });
     }
+    render() {
+      return (
+        <View style={styles.body}>
+          <ScrollView>
+            <View style={{flex:1, backgroundColor:'white'}}>
+              {this.renderCalls()}
+            </View>
+          </ScrollView>
+          <View style={styles.buttonarea}>
+              <Button
+                  // cancel the work assignment and go back
+                  onPress={()=>{this.props.navigation.navigate('ListWork');}}
+                  title="Cancel"
+                  type="solid"
+                  buttonStyle={styles.button}
+              />
+              <Button
+                  // assign the work
+                  onPress={()=>{this.assignMultipleWork();}}
+                  title={'Assign(' + this.state.checkedCount + '/' + this.state.count + ')'}
+                  type="solid"
+                  buttonStyle={styles.button}
+              />
+              <Button
+                  // assign first 10 work in the list
+                  onPress={()=>{this.selectTen();}}
+                  title="Select 10"
+                  type="solid"
+                  disabled={this.state.count - this.state.checkedCount < 10}
+                  buttonStyle={styles.button}
+              />
+          </View>
+        </View>
+      );
+  }
 }
 const styles = StyleSheet.create({
   body: {

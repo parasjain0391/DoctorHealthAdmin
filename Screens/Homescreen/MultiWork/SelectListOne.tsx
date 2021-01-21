@@ -5,6 +5,7 @@ import { NavigationParams } from 'react-navigation';
 import {ListItem } from 'react-native-elements';
 import { ScrollView } from 'react-native-gesture-handler';
 import database from '@react-native-firebase/database';
+import moment from 'moment';
 interface Props extends NavigationParams{}
 interface States {
     item: any [],
@@ -22,20 +23,24 @@ export default class SelectListOne extends React.Component<Props,States> {
         };
         this._isMounted = false;
     }
-    // called when the screen is loaded and gets the doctors information form the database
+    // called when the screen is loaded 
     componentDidMount() {
         this._isMounted = true;
     }
+    // called when the screen is unmounted
     componentWillUnmount() {
         this._isMounted = false;
     }
+    // the operation to add the number to selected list
     addPatient(listName:String) {
         const {call} = this.props.route.params;
+        // Add patient to allPatient for the current date
         database()
-        .ref('/allPatients/' + String(call.phoneNumber))
+        .ref('/allPatients/' + moment().format('YYYY-MM-DD') + '/' + String(call.phoneNumber))
         .set(String(call.phoneNumber))
         .then(()=>{console.log(String(call.phoneNumber) + 'is added to allPatient');})
         .catch(err=>{console.log(String(err));});
+        // Add the call to the list selected
         database()
         .ref('/work/' + String(listName) + '/' + String(call.phoneNumber))
         .set(call)
@@ -43,6 +48,7 @@ export default class SelectListOne extends React.Component<Props,States> {
         .catch(err=>{console.log(String(err));});
         this.props.navigation.navigate('ListWork');
     }
+    //show the name of the list for which the number can be added
     renderList() {
         return this.state.item.map(item => {
           return <ListItem key={item.name}

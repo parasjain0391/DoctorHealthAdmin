@@ -10,7 +10,6 @@ import moment from 'moment';
 // @ts-ignore
 import RadioButtonRN from 'radio-buttons-react-native';
 // add new patient that is not in the calllog
-// not working at the moment
 interface Props extends NavigationParams{}
 interface States {
     phoneNumber:string;
@@ -34,6 +33,7 @@ export default class AddWork extends React.Component<Props,States> {
         };
         this.workCategory = '';
     }
+    // Method called when the Add Work button is pressed
     addPatient() {
         if (String(this.state.phoneNumber).length < 10)
         {
@@ -43,7 +43,7 @@ export default class AddWork extends React.Component<Props,States> {
         } else {
             this.call.phoneNumber = this.state.phoneNumber;
             database()
-            .ref('/allPatients/' + String(this.call.phoneNumber))
+            .ref('/allPatients/' + String(moment().format('YYYY-MM-DD')) + '/' + String(this.call.phoneNumber))
             .once('value')
             .then((snapshot) => {
             if (snapshot.exists())
@@ -52,7 +52,7 @@ export default class AddWork extends React.Component<Props,States> {
             }
             else {
                 database()
-                .ref('/allPatients/' + String(this.call.phoneNumber))
+                .ref('/allPatients/' + String(moment().format('YYYY-MM-DD')) + '/' + String(this.call.phoneNumber))
                 .set(this.call.phoneNumber)
                 .then(()=>{console.log(String(this.call.phoneNumber) + 'is added to allPatient');})
                 .catch(err=>{console.log(String(err));});

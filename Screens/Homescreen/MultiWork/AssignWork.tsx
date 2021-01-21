@@ -46,8 +46,6 @@ const styles = StyleSheet.create({
     },
   });
 
-
-
 interface Props extends NavigationParams{}
 interface States {
     doctors:any [];
@@ -81,10 +79,12 @@ export default class AssignWork extends React.Component<Props,States> {
         this.ref
         .on('value',(snapshot:any)=>{this.loadDoctor(snapshot);});
     }
+    // called when the screen is unmounted
     componentWillUnmount(){
         this._isMounted = false;
         this.ref.off();
     }
+    // load the list of the doctors from the user node in the database
     loadDoctor(snapshot:any){
         const doctors:any = [];
         snapshot.forEach((item:any)=>{
@@ -95,6 +95,139 @@ export default class AssignWork extends React.Component<Props,States> {
             }
         });
         this.setState({ doctors: doctors });
+    }
+    // the patient is assigned to the doctor and the database is updated
+    assignMultipleWork() {
+        if (this.selectedDoctor.firstName === 'Not' && this.selectedDoctor.lastName === 'Selected' ){
+            Alert.alert('Please select a doctor');
+            return;
+        } else {
+            const {calls} = this.props.route.params;
+            var i:number = 0;
+            calls.forEach((call:any) => {
+                this.assignWork(call);
+                i++;
+            });
+            this.updatePerformance(this.selectedDoctor.uid,i);
+            // After the assignment the screen goes back to list work
+            this.props.navigation.navigate('ListWork');
+        }
+    }
+    // 
+    assignWork(call:any) {
+        const assign = {
+            'phoneNumber': call.phoneNumber,
+            'doctoruid': this.selectedDoctor.uid,
+            'statusUpdateDate':moment().format('YYYY-MM-DD'),
+            'statusUpdateTime':moment().format('LT'),
+            'listName':this.listName,
+            'status':'Pending',
+            'timeSpent':0,
+            'callsMade':0,
+            'assignedTo': this.selectedDoctor.firstName + ' ' + this.selectedDoctor.lastName,
+            'timestamp': moment().unix(),            
+        };
+        database()
+        .ref('/work/Pending/' + String(assign.doctoruid))
+        .child(String(assign.phoneNumber))
+        .set(assign)
+        .then(()=>{console.log(String(assign.phoneNumber) + 'is assigned to ' + String(this.selectedDoctor.uid));})
+        .catch((err)=>{console.log('/work/Pending/' + String(err));});
+        database()
+        .ref('/work/' + String(this.listName) + '/' + String(assign.phoneNumber))
+        .set(null)
+        .then(()=>{console.log(String(assign.phoneNumber) + 'is remove from ' + String(this.listName) + ' List');})
+        .catch((err)=>{console.log('/work/' + String(this.listName) + '/ ' + String(err));});
+    }
+    // the performance parameter of the doctor is updated by this method
+    updatePerformance(uid:any,i:number){
+        // Add the assigned number count to the pending parameter
+        database()
+        .ref('/doctorPerformance/' + String(uid))
+        .child('Pending')
+        .once('value')
+        .then((snapshot)=>{
+            if (snapshot.exists()){
+                console.log('Doctor Performance of today is present');
+                database()
+                .ref('/doctorPerformance/' + String(uid))
+                .update({
+                    Pending:snapshot.val() + i,
+                })
+                .then(()=>{console.log(i + 'is added to pending of doctor ' + String(this.selectedDoctor.uid));})
+                .catch((err)=>{console.log('/doctorPerformance/' + String(err));});
+            } else {
+                database()
+                .ref('/doctorPerformance/' + String(uid))
+                .update({
+                    Pending:i,
+                })
+                .then(()=>{console.log('New Pending is initialized as ' + i + ' of doctor ' + String(this.selectedDoctor.uid));})
+                .catch((err)=>{console.log('/doctorPerformance/' + String(err));});
+            }
+        })
+        .catch((err)=>{console.log('/doctorPerformance/' + String(err));});
+        //get a perfromance template and add the call count to the assigned parameter
+        database()
+        .ref('/doctorPerformance/' + String(uid))
+        .child(String(moment().format('YYYY-MM-DD')))
+        .once('value')
+        .then((snapshot)=>{
+            if (snapshot.exists()){
+                database()
+                .ref('/doctorPerformance/' + String(uid) + '/' + String(moment().format('YYYY-MM-DD')))
+                .update({
+                    Assigned:snapshot.val().Assigned + i,
+                })
+                .then(()=>{console.log(i + 'is added to Assigned of ' + String(moment().format('YYYY-MM-DD')) + ' of doctor ' + String(this.selectedDoctor.uid));})
+                .catch((err)=>{console.log(String(err));});
+            } else {
+                var freshPerformance = { 'Order Confirmed':0,
+                                    'Interested':0,
+                                    'Not Answered':0,
+                                    'Not Answered 2':0,
+                                    'Price Issue':0,
+                                    'Report Awaited':0,
+                                    'Not Interested':0,
+                                    'Assigned':i,
+                                    'Time Spent':0,
+                                    'Calls Made':0,
+                                    'Finally Confirmed':0,
+                                    'Order Declined':0,
+                                    'Assigned Rejected':0,
+                                    'Repeat':0,
+                                    'Existing Patients':0,
+                                    'Appointments':0,
+                                    'Call Backs':0,
+                                };
+                console.log(freshPerformance);
+                database()
+                .ref('/doctorPerformance/' + String(uid) + '/' + String(moment().format('YYYY-MM-DD')))
+                .set(freshPerformance)
+                .then(()=>{console.log('New Performance of ' + String(moment().format('YYYY-MM-DD')) + ' of doctor ' + String(this.selectedDoctor.uid) + ' is set with Assigned as ' + i);})
+                .catch((err)=>{console.log(String(err));});
+            }
+        })
+        .catch((err)=>{console.log(String(err));});
+    }
+    // Select the doctor is assigned to the variable and reflect it on the screen
+    selectDoctor(doctor:any) {
+        this.selectedDoctor = doctor;
+        console.log(this.selectedDoctor.firstName + ' ' + this.selectedDoctor.lastName + ' is selected');
+        this.forceUpdate();
+    }
+    // UI element of the doctors
+    renderDoctor() {
+        return this.state.doctors.map(doctor => {
+          return <ListItem key={doctor.uid}
+              onPress={()=> this.selectDoctor(doctor)}
+              bottomDivider>
+              <ListItem.Content>
+              <ListItem.Title>{doctor.firstName} {doctor.lastName}</ListItem.Title>
+              <ListItem.Subtitle>{doctor.role}</ListItem.Subtitle>
+              </ListItem.Content>
+            </ListItem>;
+        });
     }
     render() {
         return (
@@ -122,130 +255,7 @@ export default class AssignWork extends React.Component<Props,States> {
             </View>
         );
     }
-    // UI element of the doctors
-    renderDoctor() {
-        return this.state.doctors.map(doctor => {
-          return <ListItem key={doctor.uid}
-              onPress={()=> this.selectDoctor(doctor)}
-              bottomDivider>
-              <ListItem.Content>
-              <ListItem.Title>{doctor.firstName} {doctor.lastName}</ListItem.Title>
-              <ListItem.Subtitle>{doctor.role}</ListItem.Subtitle>
-              </ListItem.Content>
-            </ListItem>;
-        });
-    }
-    // Select the doctor is assigned to the variable and reflect it on the screen
-    selectDoctor(doctor:any) {
-        this.selectedDoctor = doctor;
-        console.log(this.selectedDoctor.firstName + ' ' + this.selectedDoctor.lastName + ' is selected');
-        this.forceUpdate();
-    }
-    // the patient is assigned to the doctor and the database is updated
-    // After the assignment the sreen goes back to list work
-    assignMultipleWork() {
-        if (this.selectedDoctor.firstName === 'Not' && this.selectedDoctor.lastName === 'Selected' ){
-            Alert.alert('Please select a doctor');
-            return;
-        } else {
-            const {calls} = this.props.route.params;
-            var i:number = 0;
-            calls.forEach((call:any) => {
-                this.assignWork(call);
-                i++;
-            });
-            this.updatePerformance(this.selectedDoctor.uid,i);
-            this.props.navigation.navigate('ListWork');
-        }
-    }
-    assignWork(call:any) {
-        const assign = {
-            'phoneNumber': call.phoneNumber,
-            'doctoruid': this.selectedDoctor.uid,
-            'statusUpdateDate':moment().format('YYYY-MM-DD'),
-            'statusUpdateTime':moment().format('LT'),
-            'listName':this.listName,
-            'status':'Pending',
-            'timeSpent':0,
-            'callsMade':0,
-            'assignedTo': this.selectedDoctor.firstName + ' ' + this.selectedDoctor.lastName,
-            'timestamp': moment().unix(),            
-        };
-        database()
-        .ref('/work/Pending/' + String(assign.doctoruid))
-        .child(String(assign.phoneNumber))
-        .set(assign)
-        .then(()=>{console.log(String(assign.phoneNumber) + 'is assigned to ' + String(this.selectedDoctor.uid));})
-        .catch((err)=>{console.log('/work/Pending/' + String(err));});
-        database()
-        .ref('/work/' + String(this.listName) + '/' + String(assign.phoneNumber))
-        .set(null)
-        .then(()=>{console.log(String(assign.phoneNumber) + 'is remove from ' + String(this.listName) + ' List');})
-        .catch((err)=>{console.log('/work/' + String(this.listName) + '/ ' + String(err));});
-    }
-    updatePerformance(uid:any,i:number){
-        database()
-        .ref('/doctorPerformance/' + String(uid))
-        .child('Pending')
-        .once('value')
-        .then((snapshot)=>{
-            if (snapshot.exists()){
-                console.log('Doctor Performance of today is present');
-                database()
-                .ref('/doctorPerformance/' + String(uid))
-                .update({
-                    Pending:snapshot.val() + i,
-                })
-                .then(()=>{console.log(i + 'is added to pending of doctor ' + String(this.selectedDoctor.uid));})
-                .catch((err)=>{console.log('/doctorPerformance/' + String(err));});
-            } else {
-                database()
-                .ref('/doctorPerformance/' + String(uid))
-                .update({
-                    Pending:i,
-                })
-                .then(()=>{console.log('New Pending is initialized as ' + i + ' of doctor ' + String(this.selectedDoctor.uid));})
-                .catch((err)=>{console.log('/doctorPerformance/' + String(err));});
-            }
-        })
-        .catch((err)=>{console.log('/doctorPerformance/' + String(err));});
-        
-        //get a perfromance template and assigned count
-        database()
-        .ref('/doctorPerformance/' + String(uid))
-        .child(String(moment().format('YYYY-MM-DD')))
-        .once('value')
-        .then((snapshot)=>{
-            if (snapshot.exists()){
-                database()
-                .ref('/doctorPerformance/' + String(uid) + '/' + String(moment().format('YYYY-MM-DD')))
-                .update({
-                    Assigned:snapshot.val().Assigned + i,
-                })
-                .then(()=>{console.log(i + 'is added to Assigned of ' + String(moment().format('YYYY-MM-DD')) + ' of doctor ' + String(this.selectedDoctor.uid));})
-                .catch((err)=>{console.log(String(err));});
-            } else {
-                var freshPerformance = { 'Order Confirmed':0,
-                                    'Interested':0,
-                                    'Not Answered':0,
-                                    'Not Answered 2':0,
-                                    'Price Issue':0,
-                                    'Report Awaited':0,
-                                    'Not Interested':0,
-                                    'Assigned':i,
-                                    'Time Spent':0,
-                                    'Calls Made':0,
-                                    'Finally Confirmed':0,
-                                    'Order Declined':0,
-                                    'Assigned Rejected':0};
-                console.log(freshPerformance);
-                database()
-                .ref('/doctorPerformance/' + String(uid) + '/' + String(moment().format('YYYY-MM-DD')))
-                .set(freshPerformance)
-                .then(()=>{console.log('New Performance of ' + String(moment().format('YYYY-MM-DD')) + ' of doctor ' + String(this.selectedDoctor.uid) + ' is set with Assigned as ' + i);})
-                .catch((err)=>{console.log(String(err));});
-            }
-        })
-        .catch((err)=>{console.log(String(err));});
-    }
+    
+    
+    
 }

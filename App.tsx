@@ -14,7 +14,9 @@ import {createStackNavigator} from '@react-navigation/stack';
 // @ts-ignore
 import {NavigationContainer} from '@react-navigation/native';
 //import {View} from 'react-native';
-import Login from './Screens/Login';
+//import Login from './Screens/Login';
+import Loading from './Screens/Loading';
+import LoginTrial from './Screens/LoginTrial';
 import Homescreen from './Screens/Homescreen';
 import { NavigationParams } from 'react-navigation';
 import ReConfirmedUpdate from './Screens/Homescreen/Setting/ReConfirmedUpdate';
@@ -33,11 +35,21 @@ export default class App extends React.Component<Props, States> {
     return (
       // stack navigator for login screen and others
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Login">
-          <Stack.Screen
+        <Stack.Navigator initialRouteName="Loading">
+          {/* <Stack.Screen
             name="Login"
             component={Login}
             options={{title: 'Login'}}
+          /> */}
+          <Stack.Screen
+            name="LoginTrial"
+            component={LoginTrial}
+            options={{title: 'Login'}}
+          />
+          <Stack.Screen
+            name="Loading"
+            component={Loading}
+            options={{title: 'Dr. Health'}}
           />
           <Stack.Screen
             name="Homescreen"

@@ -18,7 +18,7 @@ export default class Options extends React.Component<Props,States> {
         console.log('Logout');
         navigation.reset({
             index: 0,
-            routes: [{ name: 'Login' }],
+            routes: [{ name: 'LoginTrial' }],
         });
         await AsyncStorage.removeItem('email');
         await AsyncStorage.removeItem('password');

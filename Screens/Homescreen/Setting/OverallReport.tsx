@@ -23,6 +23,10 @@ interface States {
         'Finally Confirmed':number,
         'Order Declined':number,
         'Assigned Rejected':number,
+        'Repeat':number,
+        'Existing Patients':number,
+        'Appointments':number,
+        'Call Back':number,
     },
     Pending:number,
 }
@@ -47,6 +51,10 @@ export default class OverallReport extends React.Component<Props,States> {
                 'Finally Confirmed':0,
                 'Order Declined':0,
                 'Assigned Rejected':0,
+                'Repeat':0,
+                'Existing Patients':0,
+                'Appointments':0,
+                'Call Back':0,
             },
             Pending:0,
         };
@@ -158,6 +166,30 @@ export default class OverallReport extends React.Component<Props,States> {
                 <ListItem
                     bottomDivider>
                     <ListItem.Content>
+                        <ListItem.Title>Repeat: {this.state.dataRecieved.Repeat}</ListItem.Title>
+                    </ListItem.Content>
+                </ListItem>
+                <ListItem
+                    bottomDivider>
+                    <ListItem.Content>
+                        <ListItem.Title>Repeat: {this.state.dataRecieved['Existing Patients']}</ListItem.Title>
+                    </ListItem.Content>
+                </ListItem>
+                <ListItem
+                    bottomDivider>
+                    <ListItem.Content>
+                        <ListItem.Title>Appointments: {this.state.dataRecieved.Appointments}</ListItem.Title>
+                    </ListItem.Content>
+                </ListItem>
+                <ListItem
+                    bottomDivider>
+                    <ListItem.Content>
+                        <ListItem.Title>Call Back: {this.state.dataRecieved['Call Back']}</ListItem.Title>
+                    </ListItem.Content>
+                </ListItem>
+                <ListItem
+                    bottomDivider>
+                    <ListItem.Content>
                         <ListItem.Title>Price Issue: {this.state.dataRecieved['Price Issue']}</ListItem.Title>
                     </ListItem.Content>
                 </ListItem>
@@ -196,6 +228,10 @@ export default class OverallReport extends React.Component<Props,States> {
             'Finally Confirmed':0,
             'Order Declined':0,
             'Assigned Rejected':0,
+            'Repeat':0,
+            'Existing Patients':0,
+            'Appointments':0,
+            'Call Back':0,
         };
         let Pending = 0;
         const ref = database()

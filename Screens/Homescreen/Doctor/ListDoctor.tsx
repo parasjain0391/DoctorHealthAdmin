@@ -26,8 +26,7 @@ export default class ListDoctor extends React.Component<Props,States> {
     componentDidMount() {
         this._isMounted = true;
         this.ref
-        .on('value',(snapshot:any)=>{this.loadDoctor(snapshot);})
-        .catch((err:any)=> {console.log(String(err));});
+        .on('value',(snapshot:any)=>{this.loadDoctor(snapshot);});
     }
     componentWillUnmount() {
         this._isMounted = false;

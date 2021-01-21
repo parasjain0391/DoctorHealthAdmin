@@ -27,7 +27,7 @@ interface States {
     password:string,
     firstName:string,
     lastName:string,
-    role:number;
+    role:string;
 }
 export default class AddDoctor extends React.Component<Props,States> {
     constructor(props:Props) {
@@ -37,7 +37,7 @@ export default class AddDoctor extends React.Component<Props,States> {
             lastName:'',
             password:'',
             email:'',
-            role:-1,
+            role:'Doctor',
         };
     }
     // update the new user information to the database

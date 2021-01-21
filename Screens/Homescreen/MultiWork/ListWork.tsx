@@ -12,6 +12,7 @@ import {FAB} from 'react-native-paper';
 import database from '@react-native-firebase/database';
 // @ts-ignore
 import RNImmediatePhoneCall from 'react-native-immediate-phone-call';
+import moment from 'moment';
 interface Props extends NavigationParams{}
 interface States {
     calls: {
@@ -24,6 +25,7 @@ interface States {
         type: string;
       }[];
       isVisible:boolean;
+      logCount:number;
 }
 export default class ListWork extends React.Component<Props,States> {
     _isMounted:boolean;
@@ -40,6 +42,7 @@ export default class ListWork extends React.Component<Props,States> {
       this.state = {
         calls: [],
         isVisible: false,
+        logCount:100,
       };
     }
     // get the callog from the phone so that they can be assigned later
@@ -58,7 +61,7 @@ export default class ListWork extends React.Component<Props,States> {
               },
             );
             if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-              CallLogs.load(500).then((calls: any) => this._isMounted && this.setState({calls}));
+              CallLogs.load(this.state.logCount).then((calls: any) => this._isMounted && this.setState({calls}));
               this.getuid().then(u=> {this.uid = u;}).catch(()=>{console.log('Error in getting the uid from async storage');});
             } else {
               Alert.alert('Call Log permission denied');
@@ -79,36 +82,12 @@ export default class ListWork extends React.Component<Props,States> {
       }
       // update the calllog in realtime
       // componentDidUpdate() {
-      //   CallLogs.load(500).then((calls: any) => this._isMounted && this.setState({calls}));
+      //   this._isMounted && this.getCallLogs();
       // }
       componentWillUnmount() {
         this._isMounted = false;
       }
-      // add patient to the database
-      addPatient(call:any) {
-        call.phoneNumber = call.phoneNumber % 10000000000;
-        database()
-        .ref('/allPatients/' + String(call.phoneNumber))
-        .once('value')
-        .then((snapshot) => {
-          if (snapshot.exists())
-          {
-            Alert.alert(String(call.phoneNumber) + ' is already assigned or added');
-          }
-          else {
-            database()
-            .ref('/allPatients/' + String(call.phoneNumber))
-            .set(String(call.phoneNumber))
-            .then(()=>{console.log(String(call.phoneNumber) + 'is added to allPatient');})
-            .catch(err=>{console.log(String(err));});
-            database()
-            .ref('/work/Unassigned/' + String(call.phoneNumber))
-            .set(call)
-            .then(()=>{console.log(String(call.phoneNumber) + 'is added to Unassigned List');})
-            .catch(err=>{console.log(String(err));});
-          }
-        });
-      }
+      // This creates a alert to confirm the Add ALL number function
       confirmAddAll(){
         console.log('Add All Number Pressed');
         Alert.alert(
@@ -125,6 +104,7 @@ export default class ListWork extends React.Component<Props,States> {
           { cancelable: true }
         );
       }
+      // create an array of unique number form the last 1000 call logs and then call the addNumber function for each unique number
       addAllNumber(){
         console.log('Add All number confirmed');
         var uniqueCalls = {};
@@ -139,16 +119,16 @@ export default class ListWork extends React.Component<Props,States> {
           });
         });
       }
+      // Add a number passed as parameter to the unassigned List
       addNumber(call:any){
-        call.phoneNumber = call.phoneNumber % 10000000000;
         database()
-        .ref('/allPatients/' + String(call.phoneNumber))
+        .ref('/allPatients/' + String(moment().format('YYYY-MM-DD')) + '/' + String(call.phoneNumber))
         .once('value')
         .then((snapshot) => {
           if (!snapshot.exists())
           {
             database()
-            .ref('/allPatients/' + String(call.phoneNumber))
+            .ref('/allPatients/' + String(moment().format('YYYY-MM-DD')) + '/' + String(call.phoneNumber))
             .set(String(call.phoneNumber))
             .then(()=>{console.log(String(call.phoneNumber) + 'is added to allPatient');})
             .catch(err=>{console.log(String(err));});
@@ -160,10 +140,10 @@ export default class ListWork extends React.Component<Props,States> {
           }
         });
       }
+      //Check a single number from the call log and call selectListOne if not already present in today's date
       addOne(call:any) {
-        call.phoneNumber = call.phoneNumber % 10000000000;
         database()
-        .ref('/allPatients/' + String(call.phoneNumber))
+        .ref('/allPatients/' + moment().format('YYYY-MM-DD') + '/' + String(call.phoneNumber))
         .once('value')
         .then((snapshot) => {
             if (snapshot.exists())
@@ -175,7 +155,17 @@ export default class ListWork extends React.Component<Props,States> {
             }
           });
       }
-      // get the correct call icon
+      // Add more callLogs to be displayed by the Work screen
+      addMoreLogs() {
+        if (this.state.logCount <= 1000) {
+          this.setState({logCount:this.state.logCount + 100});
+          CallLogs.load(this.state.logCount)
+          .then((calls: any) => this._isMounted && this.setState({calls}));
+        } else {
+          Alert.alert('Call Logs has reached the maximum limit(1000)');
+        }
+      }
+      // return the correct call icon for the call type
       getCallIcon(type:string) {
         if (type === 'INCOMING'){
           return <Icon
@@ -199,14 +189,14 @@ export default class ListWork extends React.Component<Props,States> {
           return;
         }
       }
-      // return the correct all icon for the call type
       // UI element of the call Logs
       renderCalls() {
         return this.state.calls.map(call => {
+          call.phoneNumber = call.phoneNumber % 10000000000;
           return <ListItem key={String(call.phoneNumber) + String(call.timestamp)}
               bottomDivider>
               <ListItem.Content>
-              <ListItem.Title>{String(call.phoneNumber % 10000000000)}</ListItem.Title>
+              <ListItem.Title>{String(call.phoneNumber)}</ListItem.Title>
               <ListItem.Subtitle>{call.dateTime/*.slice(0,11)*/}</ListItem.Subtitle>
               </ListItem.Content>
                 {this.getCallIcon(call.type)}
@@ -229,7 +219,7 @@ export default class ListWork extends React.Component<Props,States> {
                         />}
                         type="clear"
                         // Make direct call to the number
-                        onPress={() => {RNImmediatePhoneCall.immediatePhoneCall(call.phoneNumber);}}
+                        onPress={() => {RNImmediatePhoneCall.immediatePhoneCall(String(call.phoneNumber));}}
                     />
             </ListItem>;
         });
@@ -240,6 +230,18 @@ export default class ListWork extends React.Component<Props,States> {
             <ScrollView>
               <View style={{flex:1, backgroundColor:'white'}}>
                 {this.renderCalls()}
+                <ListItem
+                  onPress = {()=>this.addMoreLogs()}
+                  bottomDivider>
+                  <ListItem.Content>
+                  <ListItem.Title>Show More Calls</ListItem.Title>
+                  </ListItem.Content>
+                </ListItem>
+                <ListItem>
+                  <ListItem.Content>
+                  <ListItem.Title />
+                  </ListItem.Content>
+                </ListItem>
               </View>
             </ScrollView>
             <FAB
@@ -252,7 +254,7 @@ export default class ListWork extends React.Component<Props,States> {
                 style={styles.fab2}
                 label="Assign"
                 icon="clipboard-text"
-                onPress={() => {this.props.navigation.navigate('SelectList');/*this.props.navigation.navigate('ListPatients');*/}}
+                onPress={() => {this.props.navigation.navigate('SelectList');}}
             />
             <FAB
                 style={styles.fab}
